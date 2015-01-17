@@ -45,6 +45,7 @@ var Condition = {
 	FLAG:        { name: 'Flag',        container: true, construct: ConditionFlag       },
 	HEALTH:      { name: 'Health',      container: true, construct: ConditionHealth     },
 	LIGHT:       { name: 'Light',       container: true, construct: ConditionLight      },
+	LORE:        { name: 'Lore',        container: true, construct: ConditionLore       },
 	MANA:        { name: 'Mana',        container: true, construct: ConditionMana       },
 	POTION:      { name: 'Potion',      container: true, construct: ConditionPotion     },
 	SKILL_LEVEL: { name: 'Skill Level', container: true, construct: ConditionSkillLevel },
@@ -491,6 +492,17 @@ function ConditionLight()
 	
 	this.data.push(new AttributeValue('Min Light', 'min-light', 0, 0));
 	this.data.push(new AttributeValue('Max Light', 'max-light', 16, 16));
+}
+
+extend('ConditionLore', 'Component');
+function ConditionLore()
+{
+	this.super('Lore', Type.CONDITION, true);
+	
+	this.description = 'Applies child components when the held item of the caster contains a line with the given string';
+	
+	this.data.push(new ListValue('Regex', 'regex', [ 'True', 'False' ], 'False'));
+	this.data.push(new StringValue('String', 'str', 'text'));
 }
 
 extend('ConditionMana', 'Component');
