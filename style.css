@@ -188,7 +188,7 @@ footer a {
 	text-align: center;
 	height: 100%;
 	display: inline-block;
-	width: 33%;
+	width: 34%;
 	color: #06C;
 	padding-top: 5px;
 	text-decoration: none;
@@ -208,11 +208,11 @@ footer a:first-child {
 }
 
 footer #profile {
-	left: 33%;
+	left: 34%;
 }
 
 footer #source {
-	left: 66%;
+	left: 68%;
 }
 
 input, select, textarea {
