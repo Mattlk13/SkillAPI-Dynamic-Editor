@@ -1,4 +1,70 @@
 /**
+ * Requires one of the given values to be active for the
+ * value with the given key for this input to be visible.
+ * (this is to be set to each input type as a function)
+ *
+ * @param {string} key    - the value key of the required value input
+ * @param {Array}  values - the list of values that result in this being visible
+ */
+function requireValue(key, values)
+{
+	this.requirements = this.requirements || [];
+	this.requirements.push({ key: key, values: values });
+	return this;
+}
+
+/**
+ * Applies the values required from above
+ */ 
+function applyRequireValues()
+{
+	for (var i = 0; this.requirements && i < this.requirements.length; i++)
+	{
+		var key = this.requirements[i].key;
+		var values = this.requirements[i].values;
+		
+		var element = document.getElementById(key);
+		if (element != null)
+		{
+			element.requireLists = element.requireLists || [];
+			element.requireLists.push({ element: this, values: values });
+			element.addEventListener('change', checkRequireValue);
+			checkRequireValue.bind(element)();
+		}
+	}
+}
+
+/**
+ * Does the check when an input is updated to determine
+ * the visibility for those requiring certain values.
+ *
+ * @param {Object} e - event data
+ */ 
+function checkRequireValue(e)
+{
+	for (var i = 0; i < this.requireLists.length; i++)
+	{
+		var requireData = this.requireLists[i];
+		var visible = false;
+		for (var j = 0; j < requireData.values.length; j++)
+		{
+			if (requireData.values[j] == (this.value || this.selectedIndex))
+			{
+				visible = true;
+			}
+		}
+		if (visible)
+		{
+			requireData.element.show();
+		}
+		else 
+		{
+			requireData.element.hide();
+		}
+	}
+}
+
+/**
  * Represents a defined list of options for a value
  * that is stored as an index instead of the names of
  * the values themselves.
@@ -22,6 +88,10 @@ function IndexListValue(name, key, list, index)
 	this.hidden = false;
 }
 
+// -- Hooking up the function at the top, see comments there -- //
+IndexListValue.prototype.requireValue = requireValue;
+IndexListValue.prototype.applyRequireValues = applyRequireValues;
+
 /**
  * Creates the form HTML for the value and appends
  * it to the target element
@@ -35,6 +105,7 @@ IndexListValue.prototype.createHTML = function(target)
 	target.appendChild(this.label);
 	
 	this.select = document.createElement('select');
+	this.select.id = this.key;
 	for (var i = 0; i < this.list.length; i++)
 	{
 		var option = document.createElement('option');
@@ -114,6 +185,10 @@ function ListValue(name, key, list, value)
 	this.hidden = false;
 }
 
+// -- Hooking up the function at the top, see comments there -- //
+ListValue.prototype.requireValue = requireValue;
+ListValue.prototype.applyRequireValues = applyRequireValues;
+
 /**
  * Creates the form HTML for the value and appends
  * it to the target element
@@ -127,6 +202,7 @@ ListValue.prototype.createHTML = function(target)
 	target.appendChild(this.label);
 	
 	this.select = document.createElement('select');
+	this.select.id = this.key;
 	var selected = -1;
 	for (var i = 0; i < this.list.length; i++)
 	{
@@ -218,6 +294,10 @@ function AttributeValue(name, key, base, scale)
 	this.hidden = false;
 }
 
+// -- Hooking up the function at the top, see comments there -- //
+AttributeValue.prototype.requireValue = requireValue;
+AttributeValue.prototype.applyRequireValues = applyRequireValues;
+
 /**
  * Creates the form HTML for the value and appends
  * it to the target element
@@ -231,6 +311,7 @@ AttributeValue.prototype.createHTML = function(target)
 	target.appendChild(this.label);
 	
 	this.baseBox = document.createElement('input');
+	this.baseBox.id = this.key + '-base';
 	this.baseBox.value = this.base;
 	this.baseBox.className = 'base';
 	this.baseBox.addEventListener('input', filterDouble);
@@ -242,6 +323,7 @@ AttributeValue.prototype.createHTML = function(target)
 	target.appendChild(this.left);
 	
 	this.scaleBox = document.createElement('input');
+	this.scaleBox.id = this.key + '-scale';
 	this.scaleBox.value = this.scale;
 	this.scaleBox.className = 'scale';
 	this.scaleBox.addEventListener('input', filterDouble);
@@ -327,6 +409,10 @@ function DoubleValue(name, key, value)
 	this.hidden = false;
 }
 
+// -- Hooking up the function at the top, see comments there -- //
+DoubleValue.prototype.requireValue = requireValue;
+DoubleValue.prototype.applyRequireValues = applyRequireValues;
+
 /**
  * Creates the form HTML for the value and appends
  * it to the target element
@@ -340,6 +426,7 @@ DoubleValue.prototype.createHTML = function(target)
 	target.appendChild(this.label);
 	
 	this.box = document.createElement('input');
+	this.box.id = this.key;
 	this.box.value = this.value;
 	this.box.addEventListener('input', filterDouble);
 	target.appendChild(this.box);
@@ -412,6 +499,10 @@ function IntValue(name, key, value)
 	this.hidden = false;
 }
 
+// -- Hooking up the function at the top, see comments there -- //
+IntValue.prototype.requireValue = requireValue;
+IntValue.prototype.applyRequireValues = applyRequireValues;
+
 /**
  * Creates the form HTML for the value and appends
  * it to the target element
@@ -425,6 +516,7 @@ IntValue.prototype.createHTML = function(target)
 	target.appendChild(this.label);
 	
 	this.box = document.createElement('input');
+	this.box.id = this.key;
 	this.box.value = this.value;
 	this.box.addEventListener('input', filterInt);
 	target.appendChild(this.box);
@@ -497,6 +589,10 @@ function StringValue(name, key, value)
 	this.hidden = false;
 }
 
+// -- Hooking up the functions at the top, see comments there -- //
+StringValue.prototype.requireValue = requireValue;
+StringValue.prototype.applyRequireValues = applyRequireValues;
+
 /**
  * Creates the form HTML for the value and appends
  * it to the target element
@@ -510,6 +606,7 @@ StringValue.prototype.createHTML = function(target)
 	target.appendChild(this.label);
 	
 	this.box = document.createElement('input');
+	this.box.id = this.key;
 	this.box.value = this.value;
 	target.appendChild(this.box);
 }
@@ -581,6 +678,10 @@ function StringListValue(name, key, value)
 	this.hidden = false;
 }
 
+// -- Hooking up the function at the top, see comments there -- //
+StringListValue.prototype.requireValue = requireValue;
+StringListValue.prototype.applyRequireValues = applyRequireValues;
+
 /**
  * Creates the form HTML for the value and appends
  * it to the target element
@@ -602,6 +703,7 @@ StringListValue.prototype.createHTML = function(target)
 	}
 	
 	this.box = document.createElement('textarea');
+	this.box.id = this.key;
 	this.box.value = content;
 	target.appendChild(this.box);
 }

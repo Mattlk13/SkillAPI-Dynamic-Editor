@@ -222,6 +222,11 @@ Component.prototype.createFormHTML = function()
 	target.innerHTML = '';
 	target.appendChild(form);
 	activeComponent = this;
+	
+	for (var i = 0; i < this.data.length; i++)
+	{
+		this.data[i].applyRequireValues();
+	}
 }
 
 /**
@@ -418,7 +423,7 @@ function ConditionClassLevel()
 {
 	this.super('Class Level', Type.CONDITION, true);
 	
-	this.description = 'Applies child components when the level of the class with this skill is within the range.';
+	this.description = 'Applies child components when the level of the class with this skill is within the range. This only checks the level of the caster, not the targets.';
 	
 	this.data.push(new IntValue('Min Level', 'min-level', 2));
 	this.data.push(new IntValue('Max Level', 'max-level', 99));
@@ -515,7 +520,7 @@ function ConditionSkillLevel(skill)
 {
 	this.super('Skill Level', Type.CONDITION, true);
 	
-	this.description = 'Applies child components when the skill level is with the range.';
+	this.description = 'Applies child components when the skill level is with the range. This checks the skill level of the caster, not the targets.';
 	
 	this.data.push(new StringValue('Skill', 'skill', skill));
 	this.data.push(new IntValue('Min Level', 'min-level', 2));
@@ -592,7 +597,7 @@ function MechanicCooldown()
 {
 	this.super('Cooldown', Type.MECHANIC, false);
 	
-	this.description = "Modifies the cooldown of the target's skill(s).";
+	this.description = "Lowers the cooldowns of the target's skill(s). If you provide a negative amount, it will increase the cooldown.";
 	
 	this.data.push(new StringValue('Skill (or "all")', 'skill', 'all'));
 	this.data.push(new ListValue('Type', 'type', [ 'Seconds', 'Percent' ], 'Seconds'));
@@ -648,7 +653,8 @@ function MechanicHeal()
 	
 	this.description = 'Restores health to each target.';
 	
-	this.data.push(new AttributeValue("Health", "health", 3, 1));
+	this.data.push(new ListValue("Type", "type", [ "Health", "Percent" ], "Health"));
+	this.data.push(new AttributeValue("Value", "value", 3, 1));
 }
 
 extend('MechanicLaunch', 'Component');
@@ -668,12 +674,10 @@ function MechanicLightning()
 {
 	this.super('Lightning', Type.MECHANIC, false);
 	
-	this.description = 'Strikes lightning on or in front of the target.';
+	this.description = 'Strikes lightning on or near the target. Negative offsets will offset it in the opposite direction (e.g. negative forward offset puts it behind the target).';
 	
-	this.data.push(new AttributeValue('Bolts', 'bolts', 1, 0));
-	this.data.push(new AttributeValue('Spacing', 'spacing', 1, 0));
-	this.data.push(new AttributeValue('Offset', 'offset', 0, 0));
-	this.data.push(new ListValue('Caster Immunity', [ 'True', 'False' ], 'True'));
+	this.data.push(new AttributeValue('Forward Offset', 'forward', 0, 0));
+	this.data.push(new AttributeValue('Right Offset', 'right', 0, 0));
 }
 
 extend('MechanicMana', 'Component');
@@ -694,11 +698,24 @@ function MechanicParticle()
 	
 	this.description = 'Plays a particle effect about the target.';
 	
-	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Flames', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Potal', 'Potion Break', 'Red Dust', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ], 'Angry Villager'));
+	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Potal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager'));
 	this.data.push(new ListValue('Arrangement', 'arrangement', [ 'Circle', 'Hemisphere', 'Sphere' ], 'Circle'));
 	this.data.push(new AttributeValue('Radius', 'radius', 4, 0));
 	this.data.push(new AttributeValue('Amount', 'amount', 20, 0));
-	this.data.push(new DoubleValue('Particle Speed', 'speed', 1, 0));
+	
+	// Circle arrangement direction
+	this.data.push(new ListValue('Circle Direction', 'direction', [ 'XY', 'XZ', 'YZ' ], 'XZ').requireValue('arrangement', [ 'Circle' ]));
+	
+	// Bukkit particle data value
+	this.data.push(new IntValue('Data', 'data', 0).requireValue('particle', [ 'Smoke', 'Ender Signal', 'Mobspawner Flames', 'Potion Break' ]));
+	
+	// Reflection particle data
+	var reflectList = [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Explode', 'Fireworks Spark', 'Flame', 'Footstep', 'Happy Villager', 'Hear', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Portal', 'Red Dust', 'Slime', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ];
+	this.data.push(new IntValue('Visible Radius', 'visible-radius', 25).requireValue('particle', reflectList));
+	this.data.push(new DoubleValue('DX', 'dx', 0).requireValue('particle', reflectList));
+	this.data.push(new DoubleValue('DY', 'dy', 0).requireValue('particle', reflectList));
+	this.data.push(new DoubleValue('DZ', 'dz', 0).requireValue('particle', reflectList));
+	this.data.push(new DoubleValue('Particle Speed', 'speed', 1).requireValue('particle', reflectList));
 }
 
 extend('MechanicParticleProjectile', 'Component');
@@ -709,10 +726,20 @@ function MechanicParticleProjectile()
 	this.description = 'Launches a projectile using particles as its visual that applies child components on hit. The target passed on will be the collided target.';
 	
 	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Flames', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Potal', 'Potion Break', 'Red Dust', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ], 'Angry Villager'));
-	this.data.push(new DoubleValue('Particle Speed', 'speed', 1, 0));
 	this.data.push(new AttributeValue('Speed', 'velocity', 3, 0));
 	this.data.push(new AttributeValue('Angle', 'angle', 30, 0));
 	this.data.push(new AttributeValue('Amount', 'amount', 1, 0));
+	
+	// Bukkit particle data value
+	this.data.push(new IntValue('Data', 'data', 0).requireValue('particle', [ 'Smoke', 'Ender Signal', 'Mobspawner Flames', 'Potion Break' ]));
+	
+	// Reflection particle data
+	var reflectList = [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Explode', 'Fireworks Spark', 'Flame', 'Footstep', 'Happy Villager', 'Hear', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Portal', 'Red Dust', 'Slime', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ];
+	this.data.push(new IntValue('Visible Radius', 'visible-radius', 25).requireValue('particle', reflectList));
+	this.data.push(new DoubleValue('DX', 'dx', 0).requireValue('particle', reflectList));
+	this.data.push(new DoubleValue('DY', 'dy', 0).requireValue('particle', reflectList));
+	this.data.push(new DoubleValue('DZ', 'dz', 0).requireValue('particle', reflectList));
+	this.data.push(new DoubleValue('Particle Speed', 'speed', 1).requireValue('particle', reflectList));
 }
 
 extend('MechanicPotion', 'Component');
