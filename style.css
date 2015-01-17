@@ -58,7 +58,7 @@ html, body {
 }
 
 #main {
-	height: calc(100% - 110px);
+	height: calc(100% - 115px);
 	background-color: #333;
 	clear: both;
 }
@@ -180,21 +180,23 @@ hr {
 
 footer {
 	width: 100%;
-	height: 30px;
+	height: 40px;
 	background-color: black;
 }
 
 footer a {
 	text-align: center;
+	height: 100%;
 	display: inline-block;
-	width: 50%;
+	width: 33%;
 	color: #06C;
 	padding-top: 5px;
 	text-decoration: none;
 	border-top: 1px solid white;
 	position: absolute;
-	left: 50%;
+	left: 0;
 	transition: background-color 600ms;
+	border-left: 1px solid white;
 }
 
 footer a:hover {
@@ -202,8 +204,15 @@ footer a:hover {
 }
 
 footer a:first-child {
-	border-right: 1px solid white;
-	left: 0;
+	border-left: none;
+}
+
+footer #profile {
+	left: 33%;
+}
+
+footer #source {
+	left: 66%;
 }
 
 input, select, textarea {
