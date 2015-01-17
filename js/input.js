@@ -164,6 +164,16 @@ IndexListValue.prototype.getSaveString = function(spacing)
 }
 
 /**
+ * Loads a config value
+ *
+ * @param {integer} value - config int value
+ */
+IndexListValue.prototype.load = function(value)
+{
+	this.index = value;
+}
+
+/**
  * Represents a defined list of options for a value
  * 
  * @param {string} name  - the display name of the value
@@ -267,6 +277,16 @@ ListValue.prototype.update = function()
 ListValue.prototype.getSaveString = function(spacing)
 {	
 	return spacing + this.key + ": '" + this.value + "'\n";
+}
+
+/**
+ * Loads a config value
+ *
+ * @param {string} value - config string value
+ */
+ListValue.prototype.load = function(value)
+{
+	this.value = value;
 }
 
 /**
@@ -390,6 +410,26 @@ AttributeValue.prototype.getSaveString = function(spacing)
 }
 
 /**
+ * Loads a config value
+ *
+ * @param {float} value - config double value
+ */
+AttributeValue.prototype.loadBase = function(value)
+{
+	this.base = value;
+}
+
+/**
+ * Loads a config value
+ *
+ * @param {float} value - config double value
+ */
+AttributeValue.prototype.loadScale = function(value)
+{
+	this.scale = value;
+}
+
+/**
  * Represents a fixed double value
  *
  * @param {string} name  - the display name of the value
@@ -477,6 +517,16 @@ DoubleValue.prototype.update = function()
 DoubleValue.prototype.getSaveString = function(spacing)
 {	
 	return spacing + this.key + ": " + this.value + "\n";
+}
+
+/**
+ * Loads a config value
+ *
+ * @param {float} value - config double value
+ */
+DoubleValue.prototype.load = function(value)
+{
+	this.value = value;
 }
 
 /**
@@ -570,6 +620,16 @@ IntValue.prototype.getSaveString = function(spacing)
 }
 
 /**
+ * Loads a config value
+ *
+ * @param {integer} value - config int value
+ */
+IntValue.prototype.load = function(value)
+{
+	this.value = value;
+}
+
+/**
  * Represents a fixed string value
  *
  * @param {string} name  - the display name of the value
@@ -656,6 +716,16 @@ StringValue.prototype.update = function()
 StringValue.prototype.getSaveString = function(spacing)
 {	
 	return spacing + this.key + ": '" + this.value + "'\n";
+}
+
+/**
+ * Loads a config value
+ *
+ * @param {string} value - config string value
+ */
+StringValue.prototype.load = function(value)
+{
+	this.value = value;
 }
 
 /**
@@ -758,4 +828,14 @@ StringListValue.prototype.getSaveString = function(spacing)
 		result += spacing + "- '" + this.value[i] + "'\n";
 	}
 	return result;
+}
+
+/**
+ * Loads a config value
+ *
+ * @param {Array} value - config string list value
+ */ 
+StringListValue.prototype.load = function(value)
+{	
+	this.value = value;
 }

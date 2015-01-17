@@ -1,5 +1,6 @@
 depend('filter');
 depend('input');
+depend('yaml');
 depend('component', function() {
 
 	// Set up component option lists
@@ -32,6 +33,11 @@ depend('material', function() {
 			showSkillPage('skillForm');
 		});
 		document.getElementById('saveButton').addEventListener('click', function(e) {
+			activeSkill.update();
+			if (activeComponent)
+			{
+				activeComponent.update();
+			}
 			var data = 'loaded: false\n';
 			for (var i = 0; i < skills.length; i++)
 			{
@@ -72,6 +78,7 @@ depend('material', function() {
 			}
 		});
 		document.getElementById('saveButton').addEventListener('click', function(e) {
+			activeClass.update();
 			var data = 'loaded: false\n';
 			for (var i = 0; i < classes.length; i++)
 			{
@@ -186,10 +193,13 @@ function Attribute(key, base, scale)
 
 /**
  * Saves text data to a file locally
+ *
+ * Code slightly modified from this page:
+ * https://thiscouldbebetter.wordpress.com/2012/12/18/loading-editing-and-saving-a-text-file-in-html5-using-javascrip/
  */ 
 function saveToFile(file, data) 
 {
-	var textFileAsBlob = new Blob([data], {type:'text/plain'});
+	var textFileAsBlob = new Blob([data], { type: 'text/plain;charset=utf-8' });
 
 	var downloadLink = document.createElement("a");
 	downloadLink.download = file;
@@ -211,4 +221,180 @@ function saveToFile(file, data)
 	}
 
 	downloadLink.click();
+}
+
+// Prepares for handling dropped files
+document.addEventListener('dragover', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+}, false);
+
+// Examines dropped files and sets up loading applicable ones
+document.addEventListener('drop', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    for (var i = 0; i < e.dataTransfer.files.length; i++) {
+		var file = e.dataTransfer.files[i];
+        if (file.name.indexOf('.yml') == -1) continue;
+		var reader = new FileReader();
+        if (file.name.indexOf('skills') == 0) {
+            reader.onload = loadSkills;
+        }
+        else if (file.name.indexOf('classes') == 0) {
+            reader.onload = loadClasses;
+        }
+        else {
+			// Load individual file
+            continue;
+        }
+        reader.readAsText(file);
+    }
+}, false);
+
+// Loads skill data from a file after it has been read
+// e - event details
+function loadSkills(e) {
+    var text = e.target.result;
+    document.activeElement.blur();
+	
+	// Load new skills
+	var data = parseYAML(text);
+	for (var key in data)
+	{
+		if (data[key] instanceof YAMLObject && key != 'loaded')
+		{
+			if (isSkillNameTaken(key))
+			{
+				getSkill(key).load(data[key]);
+			}
+			else
+			{
+				addSkill(key).load(data[key]);
+			}
+		}
+	}
+}
+
+// Loads class data from a file after it has been read
+// e - event details
+function loadClasses(e) {
+    var text = e.target.result;
+    document.activeElement.blur();
+	
+	// Load new classes
+	var data = parseYAML(text);
+	for (var key in data)
+	{
+		if (data[key] instanceof YAMLObject && key != 'loaded' && !isClassNameTaken(key))
+		{
+			if (isClassNameTaken(key))
+			{
+				getClass(key).load(data[key]);
+			}
+			else
+			{
+				addClass(key).load(data[key]);
+			}
+		}
+	}
+}
+
+/**
+ * Loads a section of config data
+ */
+function loadSection(data) 
+{	
+	this.components = [];
+	for (var x in data)
+	{
+		if (x == this.dataKey)
+		{
+			var attribs = data[x];
+			for (var y in attribs)
+			{
+				for (var i = 0; i < this.data.length; i++)
+				{
+					if (this.data[i].key == y)
+					{
+						this.data[i].load(attribs[y]);
+						break;
+					}
+					else if (this.data[i].key + '-base' == y)
+					{
+						this.data[i].loadBase(attribs[y]);
+						break;
+					}
+					else if (this.data[i].key + '-scale' == y)
+					{
+						this.data[i].loadScale(attribs[y]);
+						break;
+					}
+				}
+			}
+		}
+		else if (x == this.componentKey)
+		{
+			var components = data[x];
+			for (var y in components)
+			{
+				var type = components[y].type;
+				var list;
+				if (type == Type.TRIGGER)
+				{
+					list = Trigger;
+				}
+				else if (type == Type.TARGET)
+				{
+					list = Target;
+				}
+				else if (type == Type.CONDITION)
+				{
+					list = Condition;
+				}
+				else if (type == Type.MECHANIC)
+				{	
+					list = Mechanic;
+				}
+				if (list !== undefined)
+				{
+					for (var z in list)
+					{
+						if (list[z].name == y)
+						{
+							var component = new list[z].construct();
+							component.parent = this;
+							this.components.push(component);
+							component.load(components[y]);
+						}
+					}
+				}
+			}
+		}
+		else if (this.dataKey != 'data')
+		{
+			for (var i = 0; i < this.data.length; i++)
+			{
+				if (this.data[i].key == x)
+				{
+					if (!this.data[i].load)
+					{
+						debugger;
+					}
+					this.data[i].load(data[x]);
+					break;
+				}
+				else if (this.data[i].key + '-base' == x)
+				{
+					this.data[i].loadBase(data[x]);
+					break;
+				}
+				else if (this.data[i].key + '-scale' == x)
+				{
+					this.data[i].loadScale(data[x]);
+					break;
+				}
+			}
+		}
+	}
 }

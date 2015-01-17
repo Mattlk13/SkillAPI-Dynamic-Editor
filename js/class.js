@@ -7,6 +7,9 @@
  */ 
 function Class(name) 
 {
+	this.dataKey = 'attributes';
+	this.componentKey = 'classes do not have components';
+	
 	// Class data
 	this.data = [
 		new StringValue('Name', 'name', name),
@@ -56,6 +59,7 @@ Class.prototype.createFormHTML = function()
 	save.innerHTML = 'Save',
 	save.classData = this;
 	save.addEventListener('click', function(e) {
+		this.classData.update();
 		saveToFile(this.classData.data[0].value + '.yml', this.classData.getSaveString());
 	});
 	form.appendChild(save);
@@ -99,10 +103,15 @@ Class.prototype.update = function()
 			break;
 		}
 	}
+	var prevName = this.data[0].value;
 	for (var j = 0; j < this.data.length; j++)
 	{
 		this.data[j].update();
 	}
+	var newName = this.data[0].value;
+	this.data[0].value = prevName;
+	if (isClassNameTaken(newName)) return;
+	this.data[0].value = newName;
 	list[index].text = this.data[0].value;
 }
 
@@ -131,38 +140,81 @@ Class.prototype.getSaveString = function()
 }
 
 /**
+ * Loads class data from the config lines stating at the given index
+ *
+ * @param {YAMLObject} data - the data to load
+ *
+ * @returns {Number} the index of the last line of data for this class
+ */
+Class.prototype.load = loadSection;
+
+/**
  * Creates a new class and switches the view to it
+ *
+ * @returns {Class} the new class
  */ 
 function newClass()
 {
 	var id = 1;
 	while (isClassNameTaken('Class ' + id)) id++;
 	
-	activeClass = new Class('Class ' + id);
-	classes.push(activeClass);
+	activeClass = addClass('Class ' + id);
 	
-	var option = document.createElement('option');
-	option.text = 'Class ' + id;
 	var list = document.getElementById('classList');
-	list.add(option, list.length - 1);
 	list.selectedIndex = list.length - 2;
 	
 	activeClass.createFormHTML();
+	
+	return activeClass;
+}
+
+/**
+ * Adds a skill to the editor without switching the view to it
+ *
+ * @param {string} name - the name of the skill to add
+ *
+ * @returns {Skill} the added skill
+ */ 
+function addClass(name) 
+{
+	var c = new Class(name);
+	classes.push(c);
+	
+	var option = document.createElement('option');
+	option.text = name;
+	var list = document.getElementById('classList');
+	list.add(option, list.length - 1);
+	
+	return c;
 }
 
 /**
  * Checks whether or not a class name is currently taken
  *
  * @param {string} name - name to check for
+ *
+ * @returns {boolean} true if the name is taken, false otherwise
  */ 
 function isClassNameTaken(name)
+{
+	return getClass(name) != null;
+}
+
+/**
+ * Retrieves a class by name
+ *
+ * @param {string} name - name of the class to retrieve
+ *
+ * @returns {Class} the class with the given name or null if not found
+ */
+function getClass(name)
 {
 	name = name.toLowerCase();
 	for (var i = 0; i < classes.length; i++)
 	{
-		if (classes[i].data[0].value.toLowerCase() == name) return true;
+		if (classes[i].data[0].value.toLowerCase() == name) return classes[i];
 	}
-	return false;
+	return null;
 }
 
 var activeClass = new Class('Class 1');

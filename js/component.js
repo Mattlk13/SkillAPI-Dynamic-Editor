@@ -102,6 +102,9 @@ function Component(name, type, container, parent)
 	this.html = undefined;
 	this.components = [];
 	this.data = [];
+	
+	this.dataKey = 'data';
+	this.componentKey = 'children';
 }
 
 /**
@@ -248,14 +251,11 @@ Component.prototype.update = function()
  */
 Component.prototype.getSaveString = function(spacing)
 {
-	if (this.data.length == 0 && this.components.length == 0)
-	{
-		return spacing + this.name + ": {}\n";
-	}
 	var result = spacing + this.name + ":\n";
+	result += spacing + "  type: '" + this.type + "'\n";
 	if (this.data.length > 0)
 	{
-		result += spacing + '  attributes:\n';
+		result += spacing + '  data:\n';
 		for (var i = 0; i < this.data.length; i++)
 		{
 			result += this.data[i].getSaveString(spacing + '    ');
@@ -271,6 +271,15 @@ Component.prototype.getSaveString = function(spacing)
 	}
 	return result;
 }
+
+/**
+ * Loads component data from the config lines stating at the given index
+ *
+ * @param {YAMLObject} data - the data to load
+ *
+ * @returns {Number} the index of the last line of data for this component
+ */
+Component.prototype.load = loadSection;
 
 // -- Trigger constructors ----------------------------------------------------- //
 

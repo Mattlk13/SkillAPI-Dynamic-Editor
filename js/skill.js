@@ -12,6 +12,9 @@ function Skill(name)
 	// Included to simplify code when adding components
 	this.html = document.getElementById('builderContent');
 	
+	this.dataKey = 'attributes';
+	this.componentKey = 'components';
+	
 	// Skill data
 	this.data = [
 		new StringValue('Name', 'name', name),
@@ -119,10 +122,15 @@ Skill.prototype.update = function()
 			break;
 		}
 	}
+	var prevName = this.data[0].value;
 	for (var j = 0; j < this.data.length; j++)
 	{
 		this.data[j].update();
 	}
+	var newName = this.data[0].value;
+	this.data[0].value = prevName;
+	if (isSkillNameTaken(newName)) return;
+	this.data[0].value = newName;
 	list[index].text = this.data[0].value;
 }
 
@@ -175,40 +183,83 @@ Skill.prototype.getSaveString = function()
 }
 
 /**
+ * Loads skill data from the config lines stating at the given index
+ *
+ * @param {YAMLObject} data - the data to load
+ *
+ * @returns {Number} the index of the last line of data for this skill
+ */
+Skill.prototype.load = loadSection;
+
+/**
  * Creates a new skill and switches the view to it
+ *
+ * @returns {Skill} the new skill
  */ 
 function newSkill()
 {
 	var id = 1;
 	while (isSkillNameTaken('Skill ' + id)) id++;
 	
-	activeSkill = new Skill('Skill ' + id);
-	skills.push(activeSkill);
+	activeSkill = addSkill('Skill ' + id);
 	
-	var option = document.createElement('option');
-	option.text = 'Skill ' + id;
 	var list = document.getElementById('skillList');
-	list.add(option, list.length - 1);
 	list.selectedIndex = list.length - 2;
 	
 	activeSkill.apply();
 	activeSkill.createFormHTML();
 	showSkillPage('skillForm');
+	
+	return activeSkill;
+}
+
+/**
+ * Adds a skill to the editor without switching the view to it
+ *
+ * @param {string} name - the name of the skill to add
+ *
+ * @returns {Skill} the added skill
+ */ 
+function addSkill(name) 
+{
+	var skill = new Skill(name);
+	skills.push(skill);
+	
+	var option = document.createElement('option');
+	option.text = name;
+	var list = document.getElementById('skillList');
+	list.add(option, list.length - 1);
+	
+	return skill;
 }
 
 /**
  * Checks whether or not a skill name is currently taken
  *
  * @param {string} name - name to check for
+ *
+ * @returns {boolean} true if the name is taken, false otherwise
  */ 
 function isSkillNameTaken(name)
+{
+	return getSkill(name) != null;
+}
+
+/**
+ * Retrieves a skill by name
+ *
+ * @param {string} name - name of the skill to retrieve
+ *
+ * @returns {Skill} the skill with the given name or null if not found
+ */
+function getSkill(name)
 {
 	name = name.toLowerCase();
 	for (var i = 0; i < skills.length; i++)
 	{
-		if (skills[i].data[0].value.toLowerCase() == name) return true;
+		if (skills[i].data[0].value.toLowerCase() == name) return skills[i];
 	}
-	return false;
+	return null;
 }
 
 
