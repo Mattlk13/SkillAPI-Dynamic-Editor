@@ -69,12 +69,12 @@ Skill.prototype.createFormHTML = function()
 	var h = document.createElement('hr');
 	form.appendChild(h);
 	
-	this.data[5].list.splice(1, this.data[5].list.length - 1);
+	this.data[3].list.splice(1, this.data[3].list.length - 1);
 	for (var i = 0; i < skills.length; i++)
 	{
 		if (skills[i] != this) 
 		{
-			this.data[5].list.push(skills[i].data[0].value);
+			this.data[3].list.push(skills[i].data[0].value);
 		}
 	}
 	for (var i = 0; i < this.data.length; i++)
