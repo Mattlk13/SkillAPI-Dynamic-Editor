@@ -47,6 +47,7 @@ var Condition = {
 	LIGHT:       { name: 'Light',       container: true, construct: ConditionLight      },
 	LORE:        { name: 'Lore',        container: true, construct: ConditionLore       },
 	MANA:        { name: 'Mana',        container: true, construct: ConditionMana       },
+	NAME:        { name: 'Name',        container: true, construct: ConditionName       },
 	POTION:      { name: 'Potion',      container: true, construct: ConditionPotion     },
 	SKILL_LEVEL: { name: 'Skill Level', container: true, construct: ConditionSkillLevel },
 	STATUS:      { name: 'Status',      container: true, construct: ConditionStatus     },
@@ -415,6 +416,7 @@ function ConditionBiome()
 	
 	this.description = 'Applies child components when in a specified biome.';
 	
+	this.data.push(new ListValue('Type', 'type', [ 'In Biome', 'Not In Biome' ], 'In Biome'));
 	this.data.push(new ListValue('Biome', 'biome', [ 'Beach', 'Desert', 'Desert Hills', 'Extreme Hills', 'Forest', 'Frozen Ocean', 'Frozen River', 'Hell', 'Ice Mountains', 'Ice Plains', 'Jungle', 'Jungle Hills', 'Mushroom Island', 'Mushroom Shore', 'Ocean', 'Plains', 'River', 'Sky', 'Small Mountains', 'Swampland', 'Taiga', 'Taiga Hills' ], 'Beach'));
 }
 
@@ -468,6 +470,8 @@ function ConditionFire()
 	this.super('Fire', Type.CONDITION, true);
 	
 	this.description = 'Applies child components when the target is on fire.';
+	
+	this.data.push(new ListValue('Type', 'type', [ 'On Fire', 'Not On Fire' ], 'On Fire'));
 }
 
 extend('ConditionFlag', 'Component');
@@ -477,6 +481,7 @@ function ConditionFlag()
 	
 	this.description = 'Applies child components when the target is marked by the appropriate flag.';
 	
+	this.data.push(new StringValue('Type', 'type', [ 'Set', 'Not Set' ], 'Set'));
 	this.data.push(new StringValue('Key', 'key', 'key'));
 }
 
@@ -526,6 +531,18 @@ function ConditionMana()
 	this.data.push(new AttributeValue('Max Value', 'max-value', 10, 2));
 }
 
+extend('ConditionName', 'Component');
+function ConditionName()
+{
+	this.super('Name', Type.CONDITION, true);
+	
+	this.description = 'Applies child components when the target has a name matching the settings.';
+	
+	this.data.push(new ListValue('Contains Text', 'contains', [ 'True', 'False' ], 'True'));
+	this.data.push(new ListValue('Regex', 'regex', [ 'True', 'False' ], 'False'));
+	this.data.push(new StringValue('Text', 'text', 'text'));
+}
+
 extend('ConditionPotion', 'Component');
 function ConditionPotion()
 {
@@ -533,6 +550,7 @@ function ConditionPotion()
 	
 	this.description = 'Applies child components when the target has the potion effect.';
 	
+	this.data.psuh(new ListValue('Type', 'type', [ 'Active', 'Not Active' ], 'Active'));
 	this.data.push(new ListValue('Potion', 'potion', [ 'Any', 'Absorption', 'Blindness', 'Confusion', 'Damage Resistance', 'Fast Digging', 'Fire Resistance', 'Health Boost', 'Hunger', 'Increase Damage', 'Invisibility', 'Jump', 'Night Vision', 'Poison', 'Regeneration', 'Saturation', 'Slow', 'Slow Digging', 'Speed', 'Water Breathing', 'Weakness', 'Wither' ], 'Any'));
 }
 
@@ -555,6 +573,7 @@ function ConditionStatus()
 	
 	this.description = 'Applies child components when the target has the status condition.';
 	
+	this.data.push(new ListValue('Type', 'type', [ 'Active', 'Not Active' ], 'Active'));
 	this.data.push(new ListValue('Status', 'status', [ 'Any', 'Curse', 'Disarm', 'Root', 'Silence', 'Stun' ], 'Any'));
 }
 

@@ -73,6 +73,8 @@ YAMLObject.prototype.get = function(key, value)
  * @param {Array}  lines  - the lines of the YAML data
  * @param {Number} index  - the starting index of the data to parse
  * @param {Number} indent - the number of spaces preceeding the keys of the data
+ *
+ * @returns {Number} the ending index of the parsed data
  */
 YAMLObject.prototype.parse = function(lines, index, indent)
 {
@@ -97,7 +99,7 @@ YAMLObject.prototype.parse = function(lines, index, indent)
 			index--;
 		}
 		
-		// New section with conent
+		// New section with content
 		else if (index < lines.length - 1 && lines[index + 1].charAt(indent) == ' ')
 		{
 			index++;
