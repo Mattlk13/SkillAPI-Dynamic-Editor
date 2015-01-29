@@ -20,7 +20,19 @@ function Class(name)
 		new AttributeValue('Health', 'health', 20, 0),
 		new AttributeValue('Mana', 'mana', 20, 0),
 		new IndexListValue('Combo', 'combo', [ 'Not All Left', 'Start Left', 'Start Right', 'Start Shift', 'All' ], 0),
-		new StringListValue('Skills (one per line)', 'skills', [])
+		new StringListValue('Skills (one per line)', 'skills', []),
+		new ListValue('Icon', 'icon', materialList, 'Jack O Lantern'),
+		new IntValue('Icon Data', 'icon-data', 0),
+		new StringListValue('Icon Lore', 'icon-lore', [
+			'&d{name} &7({level}/{max})',
+			'&2Type: &6{type}',
+			'',
+			'{req:level}Level: {attr:level}',
+			'{req:cost}Cost: {attr:cost}',
+			'',
+			'&2Mana: {attr:mana}',
+			'&2Cooldown: {attr:cooldown}'
+		])
 	];
 }
 
