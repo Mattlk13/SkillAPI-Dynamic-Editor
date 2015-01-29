@@ -1,3 +1,22 @@
+var dyeList = [
+	'Black',
+	'Blue',
+	'Brown',
+	'Cyan',
+	'Gray',
+	'Green',
+	'Light Blue',
+	'Lime',
+	'Magenta',
+	'Orange',
+	'Pink',
+	'Purple',
+	'Red',
+	'Silver',
+	'White',
+	'Yellow'
+];
+
 var materialList = [
 	'Acacia Stairs',
 	'Activator Rail',
