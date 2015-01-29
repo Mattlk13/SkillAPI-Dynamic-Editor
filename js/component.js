@@ -26,10 +26,12 @@ var Trigger = {
  * Available target component data
  */ 
 var Target = {
-	AREA   : { name: 'Area',   container: true, construct: TargetArea   },
-	LINEAR : { name: 'Linear', container: true, construct: TargetLinear },
-	SELF   : { name: 'Self',   container: true, construct: TargetSelf   },
-	SINGLE : { name: 'Single', container: true, construct: TargetSingle }
+	AREA     : { name: 'Area',     container: true, construct: TargetArea     },
+	CONE     : { name: 'Cone',     container: true, construct: TargetCone     },
+	LINEAR   : { name: 'Linear',   container: true, construct: TargetLinear   },
+	LOCATION : { name: 'Location', container: true, construct: TargetLocation },
+ 	SELF     : { name: 'Self',     container: true, construct: TargetSelf     },
+	SINGLE   : { name: 'Single',   container: true, construct: TargetSingle   }
 };
 
 /**
@@ -44,6 +46,7 @@ var Condition = {
 	FIRE:        { name: 'Fire',        container: true, construct: ConditionFire       },
 	FLAG:        { name: 'Flag',        container: true, construct: ConditionFlag       },
 	HEALTH:      { name: 'Health',      container: true, construct: ConditionHealth     },
+	ITEM:        { name: 'Item',        container: true, construct: ConditionItem       },
 	LIGHT:       { name: 'Light',       container: true, construct: ConditionLight      },
 	LORE:        { name: 'Lore',        container: true, construct: ConditionLore       },
 	MANA:        { name: 'Mana',        container: true, construct: ConditionMana       },
@@ -64,24 +67,34 @@ var Mechanic = {
 	COMMAND:             { name: 'Command',             container: false, construct: MechanicCommand            },
 	COOLDOWN:            { name: 'Cooldown',            container: false, construct: MechanicCooldown           },
 	DAMAGE:              { name: 'Damage',              container: false, construct: MechanicDamage             },
+	DAMAGE_BUFF:         { name: 'Damage Buff',         container: false, construct: MechanicDamageBuff         },
+	DAMAGE_LORE:         { name: 'Damage Lore',         container: false, construct: MechanicDamageLore         },
+	DEFENSE_BUFF:        { name: 'Defense Buff',        container: false, construct: MechanicDefenseBuff        },
 	DELAY:               { name: 'Delay',               container: true,  construct: MechanicDelay              },
 	FIRE:                { name: 'Fire',                container: false, construct: MechanicFire               },
 	FLAG:                { name: 'Flag',                container: false, construct: MechanicFlag               },
+	FLAG_CLEAR:          { name: 'Flag Clear',          container: false, construct: MechanicFlagClear          },
+	FLAG_TOGGLE:         { name: 'Flag Toggle',         container: false, construct: MechanicFlagToggle         },
 	HEAL:                { name: 'Heal',                container: false, construct: MechanicHeal               },
+	ITEM_PROJECTILE:     { name: 'Item Projectile',     container: true,  construct: MechanicItemProjectile     },
 	LAUNCH:              { name: 'Launch',              container: false, construct: MechanicLaunch             },
 	LIGHTNING:           { name: 'Lightning',           container: false, construct: MechanicLightning          },
 	MANA:                { name: 'Mana',                container: false, construct: MechanicMana               },
 	PARTICLE:            { name: 'Particle',            container: false, construct: MechanicParticle           },
 	PARTICLE_PROJECTILE: { name: 'Particle Projectile', container: true,  construct: MechanicParticleProjectile },
+	PASSIVE:             { name: 'Passive',             container: true,  construct: MechanicPassive            },
+	PERMISSION:          { name: 'Permission',          container: false, construct: MechanicPermission         },
 	POTION:              { name: 'Potion',              container: false, construct: MechanicPotion             },
 	PROJECTILE:          { name: 'Projectile',          container: true,  construct: MechanicProjectile         },
 	PUSH:                { name: 'Push',                container: false, construct: MechanicPush               },
+	REPEAT:              { name: 'Repeat',              container: true,  construct: MechanicRepeat             },
 	SOUND:               { name: 'Sound',               container: false, construct: MechanicSound              },
 	STATUS:              { name: 'Status',              container: false, construct: MechanicStatus             },
 	WARP:                { name: 'Warp',                container: false, construct: MechanicWarp               },
 	WARP_LOC:            { name: 'Warp Location',       container: false, construct: MechanicWarpLoc            },
 	WARP_RANDOM:         { name: 'Warp Random',         container: false, construct: MechanicWarpRandom         },
-	WARP_TARGET:         { name: 'Warp Target',         container: false, construct: MechanicWarpTarget         }
+	WARP_TARGET:         { name: 'Warp Target',         container: false, construct: MechanicWarpTarget         },
+	WOLF:                { name: 'Wolf',                container: true,  construct: MechanicWolf               }
 };
 
 /**
@@ -205,6 +218,7 @@ Component.prototype.createFormHTML = function()
 	
 	for (var i = 0; i < this.data.length; i++)
 	{
+	this.data[i].hidden = false;
 		this.data[i].createHTML(form);
 	}
 	
@@ -297,7 +311,9 @@ function TriggerCrouch()
 {
 	this.super('Crouch', Type.TRIGGER, true);
 	
-	this.description = 'Applies skill effects when a player crouches using the shift key.';
+	this.description = 'Applies skill effects when a player starts or stops crouching using the shift key.';
+	
+	this.data.push(new ListValue('Type', 'type', [ 'Start Crouching', 'Stop Crouching' ], 'Start Crouching'));
 }
 
 extend('TriggerDeath', 'Component');
@@ -323,6 +339,7 @@ function TriggerPhysicalDamage()
 	
 	this.description = 'Applies skill effects when a player deals physical (or non-skill) damage. This includes melee attacks and firing a bow.';
 	
+	this.data.push(new ListValue('Type', 'type', [ 'Both', 'Melee', 'Projectile' ], 'Both'));
 	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0));
 	this.data.push(new DoubleValue("Max Damage", "dmg-max", 999));
 }
@@ -345,6 +362,7 @@ function TriggerTookPhysicalDamage()
 	
 	this.description = 'Applies skill effects when a player takes physical (or non-skill) damage. This includes melee attacks and projectiles not fired by a skill.';
 	
+	this.data.push(new ListValue('Type', 'type', [ 'Both', 'Melee', 'Projectile' ], 'Both'));
 	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0));
 	this.data.push(new DoubleValue("Max Damage", "dmg-max", 999));
 }
@@ -372,6 +390,21 @@ function TargetArea()
 	this.data.push(new AttributeValue("Radius", "radius", 3, 0));
 	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy"));
 	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False'));
+	this.data.push(new AttributeValue("Max Targets", "max", 99, 0));
+}
+
+extend('TargetCone', 'Component');
+function TargetCone()
+{
+	this.super('Cone', Type.TARGET, true);
+	
+	this.description = 'Targets all units in a line in front of the current target (the casting player is the default target).';
+	
+	this.data.push(new AttributeValue("Range", "range", 5, 0));
+	this.data.push(new AttributeValue("Angle", "angle", 90, 0));
+	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy"));
+	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False'));
+	this.data.push(new AttributeValue("Max Targets", "max", 99, 0));
 }
 
 extend('TargetLinear', 'Component');
@@ -385,6 +418,17 @@ function TargetLinear()
 	this.data.push(new DoubleValue("Tolerance", "tolerance", 4));
 	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy"));
 	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False'));
+	this.data.push(new AttributeValue("Max Targets", "max", 99, 0));
+}
+
+extend('TargetLocation', 'Component');
+function TargetLocation()
+{
+	this.super('Location', Type.TARGET, true);
+	
+	this.description = 'Targets the reticle location of the target or caster. Combine this with another targeting type for ranged area effects.';
+	
+	this.data.push(new AttributeValue('Range', 'range', 5, 0));
 }
 
 extend('TargetSelf', 'Component');
@@ -403,6 +447,7 @@ function TargetSingle()
 	this.description = 'Targets a single unit in front of the current target (the casting player is the default target).';
 	
 	this.data.push(new AttributeValue("Range", "range", 5, 0));
+	this.data.push(new DoubleValue("Tolerance", "tolerance", 4));
 	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy"));
 	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False'));
 }
@@ -481,7 +526,7 @@ function ConditionFlag()
 	
 	this.description = 'Applies child components when the target is marked by the appropriate flag.';
 	
-	this.data.push(new StringValue('Type', 'type', [ 'Set', 'Not Set' ], 'Set'));
+	this.data.push(new ListValue('Type', 'type', [ 'Set', 'Not Set' ], 'Set'));
 	this.data.push(new StringValue('Key', 'key', 'key'));
 }
 
@@ -495,6 +540,15 @@ function ConditionHealth()
 	this.data.push(new ListValue('Type', 'type', [ 'Health', 'Percent', 'Difference', 'Difference Percent' ], 'Health'));
 	this.data.push(new AttributeValue('Min Value', 'min-value', 0, 0));
 	this.data.push(new AttributeValue('Max Value', 'max-value', 10, 2));
+}
+
+extend('ConditionItem', 'Component');
+function ConditionItem()
+{
+	this.super('Item', Type.CONDITION, true);
+	this.description = "Applies child components when the target is wielding an item matching the given material.";
+	
+	this.data.push(new ListValue('Item', 'material', materialList, 'Stick'));
 }
 
 extend('ConditionLight', 'Component');
@@ -655,6 +709,41 @@ function MechanicDamage()
 	this.data.push(new AttributeValue("Value", "value", 3, 1));
 }
 
+extend('MechanicDamageBuff', 'Component');
+function MechanicDamageBuff()
+{
+	this.super('Damage Buff', Type.MECHANIC, false);
+	
+	this.description = 'Modifies the physical damage dealt by each target by a multiplier or a flat amount for a limited duration. Negative flat amounts or multipliers less than one will reduce damage dealt while the opposite will increase damage dealt.';
+	
+	this.data.push(new ListValue('Type', 'type', [ 'Flat', 'Multiplier' ], 'Flat'));
+	this.data.push(new AttributeValue('Value', 'value', 1, 0));
+	this.data.push(new AttributeValue('Seconds', 'seconds', 3, 0));
+}
+
+extend('MechanicDamageLore', 'Component');
+function MechanicDamageLore()
+{
+	this.super('Damage Lore', Type.MECHANIC, false);
+	
+	this.description = 'Damages each target based on a value found in the lore of the item held by the caster.';
+	
+	this.data.push(new StringValue('Regex', 'regex', 'Damage: {value}'));
+	this.data.push(new AttributeValue('Multiplier', 'multiplier', 1, 0));
+}
+
+extend('MechanicDefenseBuff', 'Component');
+function MechanicDefenseBuff()
+{
+	this.super('Defense Buff', Type.MECHANIC, false);
+	
+	this.description = 'Modifies the physical damage taken by each target by a multiplier or a flat amount for a limited duration. Negative flag amounts or multipliers less than one will reduce damage taken while the opposite will increase damage taken.';
+	
+	this.data.push(new ListValue('Type', 'type', [ 'Flat', 'Multiplier' ], 'Flat'));
+	this.data.push(new AttributeValue('Value', 'value', 1, 0));
+	this.data.push(new AttributeValue('Seconds', 'seconds', 3, 0));
+}
+
 extend('MechanicDelay', 'Component');
 function MechanicDelay()
 {
@@ -686,6 +775,26 @@ function MechanicFlag()
 	this.data.push(new AttributeValue('Seconds', 'seconds', 3, 1)); 
 }
 
+extend('MechanicFlagClear', 'Component');
+function MechanicFlagClear()
+{
+	this.super('Flag Clear', Type.MECHANIC, false);
+	
+	this.description = 'Clears a flag from the target.';
+	
+	this.data.push(new StringValue('Key', 'key', 'key'));
+}
+
+extend('MechanicFlagToggle', 'Component');
+function MechanicFlagToggle()
+{
+	this.super('Flag Toggle', Type.MECHANIC, false);
+	
+	this.description = 'Toggles a flag on or off for the target. This can be used to make toggle effects.';
+	
+	this.data.push(new StringValue('Key', 'key', 'key'));
+}
+
 extend('MechanicHeal', 'Component');
 function MechanicHeal()
 {
@@ -697,10 +806,31 @@ function MechanicHeal()
 	this.data.push(new AttributeValue("Value", "value", 3, 1));
 }
 
+extend('MechanicItemProjectile', 'Component');
+function MechanicItemProjectile()
+{
+	this.super('Item Projectile', Type.MECHANIC, true);
+	
+	this.description = 'Launches a projectile using an item as its visual that applies child components upon landing. The target passed on will be the collided target or the location where it landed if it missed.';
+	
+	this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone'));
+	this.data.push(new ListValue('Item', 'item', materialList, 'Jack O Lantern')),
+	this.data.push(new IntValue('Item Data', 'item-data', 0)),
+	this.data.push(new AttributeValue('Speed', 'velocity', 3, 0));
+	this.data.push(new AttributeValue('Amount', 'amount', 1, 0));
+	
+	// Cone values
+	this.data.push(new AttributeValue('Angle', 'angle', 30, 0).requireValue('spread', [ 'Cone', 'Horizontal Cone' ]));
+	
+	// Rain values
+	this.data.push(new AttributeValue('Height', 'height', 8, 0).requireValue('spread', [ 'Rain' ]));
+	this.data.push(new AttributeValue('Radius', 'radius', 2, 0).requireValue('spread', [ 'Rain' ]));
+}
+
 extend('MechanicLaunch', 'Component');
 function MechanicLaunch()
 {
-	this.super('MechanicLaunch', Type.MECHANIC, false);
+	this.super('Launch', Type.MECHANIC, false);
 	
 	this.description = 'Launches the target relative to their forward direction. Use negative values to go in the opposite direction (e.g. negative forward makes the target go backwards)';
 	
@@ -763,12 +893,15 @@ function MechanicParticleProjectile()
 {
 	this.super('Particle Projectile', Type.MECHANIC, true);
 	
-	this.description = 'Launches a projectile using particles as its visual that applies child components on hit. The target passed on will be the collided target.';
+	this.description = 'Launches a projectile using particles as its visual that applies child components upon landing. The target passed on will be the collided target or the location where it landed if it missed.';
 	
+	this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone'));
 	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Flames', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Potal', 'Potion Break', 'Red Dust', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ], 'Angry Villager'));
+	this.data.push(new DoubleValue('Frequency', 'frequency', 0.25));
 	this.data.push(new AttributeValue('Speed', 'velocity', 3, 0));
 	this.data.push(new AttributeValue('Angle', 'angle', 30, 0));
 	this.data.push(new AttributeValue('Amount', 'amount', 1, 0));
+	this.data.push(new DoubleValue('Lifespan', 'lifespan', 3));
 	
 	// Bukkit particle data value
 	this.data.push(new IntValue('Data', 'data', 0).requireValue('particle', [ 'Smoke', 'Ender Signal', 'Mobspawner Flames', 'Potion Break' ]));
@@ -780,6 +913,34 @@ function MechanicParticleProjectile()
 	this.data.push(new DoubleValue('DY', 'dy', 0).requireValue('particle', reflectList));
 	this.data.push(new DoubleValue('DZ', 'dz', 0).requireValue('particle', reflectList));
 	this.data.push(new DoubleValue('Particle Speed', 'speed', 1).requireValue('particle', reflectList));
+	
+	// Cone values
+	this.data.push(new AttributeValue('Angle', 'angle', 30, 0).requireValue('spread', [ 'Cone', 'Horizontal Cone' ]));
+	
+	// Rain values
+	this.data.push(new AttributeValue('Height', 'height', 8, 0).requireValue('spread', [ 'Rain' ]));
+	this.data.push(new AttributeValue('Radius', 'radius', 2, 0).requireValue('spread', [ 'Rain' ]));
+}
+
+extend('MechanicPassive', 'Component');
+function MechanicPassive()
+{
+	this.super('Passive', Type.MECHANIC, true);
+	
+	this.description = 'Applies child components continuously every period. The seconds value below is the period or how often it applies.';
+	
+	this.data.push(new DoubleValue('Seconds', 'seconds', 1));
+}
+
+extend('MechanicPermission', 'Component');
+function MechanicPermission()
+{
+	this.super('Permission', Type.MECHANIC, true);
+	
+	this.description = 'Grants each player target a permission for a limited duration. This mechanic requires Vault with an accompanying permissions plugin in order to work.';
+	
+	this.data.push(new StringValue('Permission', 'perm', 'plugin.perm.key'));
+	this.data.push(new AttributeValue('Seconds', 'seconds', 3));
 }
 
 extend('MechanicPotion', 'Component');
@@ -801,11 +962,19 @@ function MechanicProjectile()
 	
 	this.description = 'Launches a projectile that applies child components on hit. The target supplied will be the struck target.';
 	
+	this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone'));
 	this.data.push(new ListValue('Projectile', 'projectile', [ 'Arrow', 'Egg', 'Ghast Fireball', 'Snowball' ], 'Arrow'));
 	this.data.push(new ListValue('Cost', 'cost', [ 'None', 'All', 'One' ], 'None'));
 	this.data.push(new AttributeValue('Speed', 'speed', 3, 0));
 	this.data.push(new AttributeValue('Angle', 'angle', 30, 0));
 	this.data.push(new AttributeValue('Amount', 'amount', 1, 0));
+	
+	// Cone values
+	this.data.push(new AttributeValue('Angle', 'angle', 30, 0).requireValue('spread', [ 'Cone', 'Horizontal Cone' ]));
+	
+	// Rain values
+	this.data.push(new AttributeValue('Height', 'height', 8, 0).requireValue('spread', [ 'Rain' ]));
+	this.data.push(new AttributeValue('Radius', 'radius', 2, 0).requireValue('spread', [ 'Rain' ]));
 }
 
 extend('MechanicPush', 'Component');
@@ -816,6 +985,18 @@ function MechanicPush()
 	this.description = 'Pushes the target relative to the caster. This will do nothing if used with the caster as the target. Positive numbers apply knockback while negative numbers pull them in.';
 	
 	this.data.push(new AttributeValue('Speed', 'speed', 3, 1));
+}
+
+extend('MechanicRepeat', 'Component');
+function MechanicRepeat()
+{
+	this.super('Repeat', Type.MECHANIC, true);
+	
+	this.description = 'Applies child components multiple times. When it applies them is determined by the delay (seconds before the first application) and period (seconds between successive applications).';
+	
+	this.data.push(new AttributeValue('Repetitions', 'repetitions', 3, 0));
+	this.data.push(new DoubleValue('Period', 'period', 1));
+	this.data.push(new DoubleValue('Delay', 'delay', 0));
 }
 
 extend('MechanicSound', 'Component');
@@ -837,7 +1018,7 @@ function MechanicStatus()
 	
 	this.description = 'Applies a status effect to the target for a duration.';
 	
-	this.data.push(new ListValue('Status', 'status', [ 'Absorb', 'Curse', 'Disarm', 'Root', 'Silence', 'Stun' ], 'Absorb'));
+	this.data.push(new ListValue('Status', 'status', [ 'Absorb', 'Curse', 'Disarm', 'Root', 'Silence', 'Stun' ], 'Stun'));
 	this.data.push(new AttributeValue('Duration', 'duration', 3, 1));
 }
 
@@ -849,7 +1030,7 @@ function MechanicWarp()
 	this.description = 'Warps the target relative to their forward direction. Use negative numbers to go in the opposite direction (e.g. negative forward will cause the target to warp backwards).';
 	
 	this.data.push(new ListValue('Through Walls', 'walls', [ 'True', 'False' ], 'False'));
-	this.data.push(new AttributeValue('Foward', 'forward', 3, 1));
+	this.data.push(new AttributeValue('Forward', 'forward', 3, 1));
 	this.data.push(new AttributeValue('Upward', 'upward', 0, 0));
 	this.data.push(new AttributeValue('Right', 'right', 0, 0));
 }
@@ -861,12 +1042,12 @@ function MechanicWarpLoc()
 	
 	this.description = 'Warps the target to a specified location.';
 	
+	this.data.push(new StringValue('World (or "current")', 'world', 'current'));
 	this.data.push(new DoubleValue('X', 'x', 0));
 	this.data.push(new DoubleValue('Y', 'y', 0));
 	this.data.push(new DoubleValue('Z', 'z', 0));
 	this.data.push(new DoubleValue('Yaw', 'yaw', 0));
 	this.data.push(new DoubleValue('Pitch', 'pitch', 0));
-	this.data.push(new DoubleValue('Roll', 'roll', 0));
 }
 
 extend('MechanicWarpRandom', 'Component');
@@ -889,6 +1070,20 @@ function MechanicWarpTarget()
 	this.description = 'Warps either the target or the caster to the other. This does nothing when the target is the caster.';
 	
 	this.data.push(new ListValue('Type', 'type', [ 'Caster to Target', 'Target to Caster' ], 'Caster to Target'));
+}
+
+extend('MechanicWolf', 'Component');
+function MechanicWolf()
+{
+	this.super('Wolf', Type.MECHANIC, true);
+	
+	this.description = 'Summons a wolf on each target for a duration. Child components will start off targeting the wolf so you can add effects to it.';
+	
+	this.data.push(new ListValue('Collar Color', 'color', dyeList, 'Black'));
+	this.data.push(new StringValue('Wolf Name', 'name', "{player}'s Wolf"));
+	this.data.push(new AttributeValue('Health', 'health', 10, 0));
+	this.data.push(new AttributeValue('Damage', 'damage', 3, 0));
+	this.data.push(new AttributeValue('Duration', 'seconds', 10, 0));
 }
 
 // The active component being edited or added to
