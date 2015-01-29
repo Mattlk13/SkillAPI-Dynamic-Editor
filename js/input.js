@@ -360,7 +360,7 @@ AttributeValue.prototype.createHTML = function(target)
  */
 AttributeValue.prototype.hide = function()
 {
-	if (this.label && this.base && this.scale && this.left && this.right && !this.hidden)
+	if (this.label && this.baseBox && this.scaleBox && this.left && this.right && !this.hidden)
 	{
 		this.hidden = true;
 		this.label.style.display = 'none';
@@ -376,7 +376,7 @@ AttributeValue.prototype.hide = function()
  */
 AttributeValue.prototype.show = function()
 {
-	if (this.label && this.base && this.scale && this.left && this.right && this.hidden)
+	if (this.label && this.baseBox && this.scaleBox && this.left && this.right && this.hidden)
 	{
 		this.hidden = false;
 		this.label.style.display = 'block';
