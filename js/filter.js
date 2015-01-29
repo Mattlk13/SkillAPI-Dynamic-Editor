@@ -52,12 +52,16 @@ function filterDouble() {
     }
     
     // Remove non-numeric characters besides periods
-    element.value = element.value.replace(/[^0-9\.-]/g, "");
-    
+    var filtered = element.value.replace(/[^0-9\.-]/g, "");
+    if (filtered != element.value)
+	{
+		element.value = filtered;
+	}
+	
     // Remove unnecessary 0's
     for (var i = 0; i < element.value.length - 1; i++) {
         var c = element.value.charAt(i);
-        if (element.value.charAt(i) == '0') {
+        if (element.value.charAt(i) == '0' && element.value.charAt(i + 1) != '.') {
             element.value = element.value.replace('0', '');
             i--;
         }
@@ -76,7 +80,7 @@ function filterDouble() {
     }
     
     // Prevent it from being empty
-    if (element.value.length == 0 || (element.value.length == 1 && element.value.charAt(0) == '-')) {
-        element.value += '.0';
+    if (element.value.length == 0 || (element.value.length == 1 && element.value == "-")) {
+		element.value += '0';
     }
 }
