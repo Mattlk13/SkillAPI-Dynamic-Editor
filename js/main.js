@@ -269,12 +269,24 @@ document.addEventListener('drop', function(e) {
             reader.onload = loadClasses;
         }
         else {
-			// Load individual file
-            continue;
+			reader.onload = loadIndividual;
         }
         reader.readAsText(file);
     }
 }, false);
+
+// Loads an individual skill or class file
+function loadIndividual(e) {
+	var text = e.target.result;
+	if (text.indexOf('components:') >= 0 || (text.indexOf('group:') == -1 && text.indexOf('combo:') == -1 && text.indexOf('skills:') == -1))
+	{
+		loadSkills(e);
+	}
+	else 
+	{
+		loadClasses(e);
+	}
+}
 
 // Loads skill data from a file after it has been read
 // e - event details

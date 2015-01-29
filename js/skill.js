@@ -189,7 +189,19 @@ Skill.prototype.getSaveString = function()
  *
  * @returns {Number} the index of the last line of data for this skill
  */
-Skill.prototype.load = loadSection;
+Skill.prototype.load = function(data)
+{
+	if (data.active || data.embed || data.passive)
+	{
+		// Load old skill config for conversion
+	}
+	else 
+	{
+		this.loadBase(data);
+	}
+}
+
+Skill.prototype.loadBase = loadSection;
 
 /**
  * Creates a new skill and switches the view to it
