@@ -313,7 +313,9 @@ function TriggerCrouch()
 	
 	this.description = 'Applies skill effects when a player starts or stops crouching using the shift key.';
 	
-	this.data.push(new ListValue('Type', 'type', [ 'Start Crouching', 'Stop Crouching' ], 'Start Crouching'));
+	this.data.push(new ListValue('Type', 'type', [ 'Start Crouching', 'Stop Crouching' ], 'Start Crouching')
+		.setTooltip('Whether or not you want to apply components when crouching or not crouching')
+	);
 }
 
 extend('TriggerDeath', 'Component');
@@ -339,9 +341,15 @@ function TriggerPhysicalDamage()
 	
 	this.description = 'Applies skill effects when a player deals physical (or non-skill) damage. This includes melee attacks and firing a bow.';
 	
-	this.data.push(new ListValue('Type', 'type', [ 'Both', 'Melee', 'Projectile' ], 'Both'));
-	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0));
-	this.data.push(new DoubleValue("Max Damage", "dmg-max", 999));
+	this.data.push(new ListValue('Type', 'type', [ 'Both', 'Melee', 'Projectile' ], 'Both')
+		.setTooltip('The type of damage dealt')
+	);
+	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0)
+		.setTooltip('The minimum damage that needs to be dealt')
+	);
+	this.data.push(new DoubleValue("Max Damage", "dmg-max", 999)
+		.setTooltip('The maximum damage that needs to be dealt')
+	);
 }
 
 extend('TriggerSkillDamage', 'Component');
@@ -351,8 +359,13 @@ function TriggerSkillDamage()
 	
 	this.description = 'Applies skill effects when a player deals damage with a skill.';
 	
-	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0));
-	this.data.push(new DoubleValue("Max Damage", "dmg-max", 999));
+	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0)
+		.setTooltip('The minimum damage that needs to be dealt')
+		
+	);
+	this.data.push(new DoubleValue("Max Damage", "dmg-max", 999)
+		.setTooltip('The maximum damage that needs to be dealt')
+	);
 }
 
 extend('TriggerTookPhysicalDamage', 'Component');
@@ -362,9 +375,15 @@ function TriggerTookPhysicalDamage()
 	
 	this.description = 'Applies skill effects when a player takes physical (or non-skill) damage. This includes melee attacks and projectiles not fired by a skill.';
 	
-	this.data.push(new ListValue('Type', 'type', [ 'Both', 'Melee', 'Projectile' ], 'Both'));
-	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0));
-	this.data.push(new DoubleValue("Max Damage", "dmg-max", 999));
+	this.data.push(new ListValue('Type', 'type', [ 'Both', 'Melee', 'Projectile' ], 'Both')
+		.setTooltip('The type of damage dealt')
+	);
+	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0)
+		.setTooltip('The minimum damage that needs to be dealt')
+	);
+	this.data.push(new DoubleValue("Max Damage", "dmg-max", 999)
+		.setTooltip('The maximum damage that needs to be dealt')
+	);
 }
 
 extend('TriggerTookSkillDamage', 'Component');
@@ -374,8 +393,12 @@ function TriggerTookSkillDamage()
 	
 	this.description = 'Applies skill effects when a player takes damage from a skill other than their own.';
 	
-	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0));
-	this.data.push(new DoubleValue("Max Damage", "dmg-max", 999));
+	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0)
+		.setTooltip('The minimum damage that needs to be dealt')
+	);
+	this.data.push(new DoubleValue("Max Damage", "dmg-max", 999)
+		.setTooltip('The maximum damage that needs to be dealt')
+	);
 }
 
 // -- Target constructors ------------------------------------------------------ //
@@ -387,10 +410,21 @@ function TargetArea()
 	
 	this.description = 'Targets all units in a radius from the current target (the casting player is the default target).';
 	
-	this.data.push(new AttributeValue("Radius", "radius", 3, 0));
-	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy"));
-	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False'));
-	this.data.push(new AttributeValue("Max Targets", "max", 99, 0));
+	this.data.push(new AttributeValue("Radius", "radius", 3, 0)
+		.setTooltip('The radius of the area to target')
+	);
+	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
+		.setTooltip('The alignment of targets to get')
+	);
+	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False')
+		.setTooltip('Whether or not to allow targets to be on the other side of a wall')
+	);
+	this.data.push(new ListValue("Include Caster", "caster", [ 'True', 'False' ], 'False')
+		.setTooltip('Whether or not to include the caster in the target list')
+	);
+	this.data.push(new AttributeValue("Max Targets", "max", 99, 0)
+		.setTooltip('The max amount of targets to apply children to')
+	);
 }
 
 extend('TargetCone', 'Component');
@@ -400,11 +434,24 @@ function TargetCone()
 	
 	this.description = 'Targets all units in a line in front of the current target (the casting player is the default target).';
 	
-	this.data.push(new AttributeValue("Range", "range", 5, 0));
-	this.data.push(new AttributeValue("Angle", "angle", 90, 0));
-	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy"));
-	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False'));
-	this.data.push(new AttributeValue("Max Targets", "max", 99, 0));
+	this.data.push(new AttributeValue("Range", "range", 5, 0)
+		.setTooltip('The max distance any target can be')
+	);
+	this.data.push(new AttributeValue("Angle", "angle", 90, 0)
+		.setTooltip('The angle of the cone arc')
+	);
+	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
+		.setTooltip('The alignment of targets to get')
+	);
+	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False')
+		.setTooltip('Whether or not to allow targets to be on the other side of a wall')
+	);
+	this.data.push(new ListValue("Include Caster", "caster", [ 'True', 'False' ], 'False')
+		.setTooltip('Whether or not to include the caster in the target list')
+	);
+	this.data.push(new AttributeValue("Max Targets", "max", 99, 0)
+		.setTooltip('The max amount of targets to apply children to')
+	);
 }
 
 extend('TargetLinear', 'Component');
@@ -414,11 +461,24 @@ function TargetLinear()
 	
 	this.description = 'Targets all units in a line in front of the current target (the casting player is the default target).';
 	
-	this.data.push(new AttributeValue("Range", "range", 5, 0));
-	this.data.push(new DoubleValue("Tolerance", "tolerance", 4));
-	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy"));
-	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False'));
-	this.data.push(new AttributeValue("Max Targets", "max", 99, 0));
+	this.data.push(new AttributeValue("Range", "range", 5, 0)
+		.setTooltip('The max distance any target can be')
+	);
+	this.data.push(new DoubleValue("Tolerance", "tolerance", 4)
+		.setTooltip('How lenient the targeting is. Larger numbers allow easier targeting')
+	);
+	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
+		.setTooltip('The alignment of targets to get')
+	);
+	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False')
+		.setTooltip('Whether or not to allow targets to be on the other side of a wall')
+	);
+	this.data.push(new ListValue("Include Caster", "caster", [ 'True', 'False' ], 'False')
+		.setTooltip('Whether or not to include the caster in the target list')
+	);
+	this.data.push(new AttributeValue("Max Targets", "max", 99, 0)
+		.setTooltip('The max amount of targets to apply children to')
+	);
 }
 
 extend('TargetLocation', 'Component');
@@ -428,7 +488,9 @@ function TargetLocation()
 	
 	this.description = 'Targets the reticle location of the target or caster. Combine this with another targeting type for ranged area effects.';
 	
-	this.data.push(new AttributeValue('Range', 'range', 5, 0));
+	this.data.push(new AttributeValue('Range', 'range', 5, 0)
+		.setTooltip('The max distance the location can be')
+	);
 }
 
 extend('TargetSelf', 'Component');
@@ -446,10 +508,18 @@ function TargetSingle()
 	
 	this.description = 'Targets a single unit in front of the current target (the casting player is the default target).';
 	
-	this.data.push(new AttributeValue("Range", "range", 5, 0));
-	this.data.push(new DoubleValue("Tolerance", "tolerance", 4));
-	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy"));
-	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False'));
+	this.data.push(new AttributeValue("Range", "range", 5, 0)
+		.setTooltip('The max distance any target can be')
+	);
+	this.data.push(new DoubleValue("Tolerance", "tolerance", 4)
+		.setTooltip('How lenient the targeting is. Larger numbers allow easier targeting')
+	);
+	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
+		.setTooltip('The alignment of targets to get')
+	);
+	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False')
+		.setTooltip('Whether or not to allow targets to be on the other side of a wall')
+	);
 }
 
 // -- Condition constructors --------------------------------------------------- //
@@ -1007,7 +1077,7 @@ function MechanicSound()
 	this.description = "Plays a sound at the target's location.";
 	
 	this.data.push(new ListValue('Sound', 'sound', [ 'Ambience Cave', 'Ambience Rain', 'Ambience Thunder', 'Anvil Break', 'Anvil Land', 'Anvil Use', 'Arrow Hit', 'Bat Death', 'Bat Hurt', 'Bat Idle', 'Bat Loop', 'Bat Takeof', 'Blaze Death', 'Blaze Hit', 'Breath', 'Burp', 'Cat Hiss', 'Cat Hit', 'Cat Meow', 'Cat Purr', 'Cat Purreow', 'Chest Close', 'Chest Open', 'Chicken Egg Pop', 'Chicken Hurt', 'Chicken Idle', 'Chicken Walk', 'Click', 'Cow Hurt', 'Cow Idle', 'Cow Walk', 'Creeper Death', 'Creeper Hiss', 'Dig Grass', 'Dig Gravel', 'Dig Sand', 'Dig Snow', 'Dig Stone', 'Dig Wood', 'Dig Wool', 'Donkey Angry', 'Donkey Death', 'Donkey Hit', 'Donkey Idle', 'Door Close', 'Door Open', 'Drink', 'Eat', 'Enderdragon Death', 'Enderdragon Growl', 'Enderdragon Hit', 'Enderdragon Wings', 'Enderman Death', 'Enderman Hit', 'Enderman Idle', 'Enderman Scream', 'Enderman Stare', 'Enderman Teleport', 'Explode', 'Fall Big', 'Fall Small', 'Fire', 'Fire Ignite', 'Firework Blast', 'Firework Blast 2', 'Firework Large Blast', 'Firework Large Blast 2', 'Firework Launch', 'Firework Twinkle', 'Firework Twinkle 2', 'Fizz', 'Fuse', 'Ghast Charge', 'Ghast Death', 'Ghast Fireball', 'Ghast Moan', 'Ghast Scream', 'Ghast Scream 2', 'Glass', 'Horse Angry', 'Horse Armor', 'Horse Breath', 'Horse Gallop', 'Horse Hit', 'Horse Idle', 'Horse Jump', 'Horse Land', 'Horse Saddle', 'Horse Skeleton Death', 'Horse Skeleton Idle', 'Horse Soft', 'Horse Wood', 'Horse Zombie Death', 'Horse Zombie Hit', 'Horse Zombie Idle', 'Hurt', 'Hurt Flesh', 'Iron Golem Death', 'Iron Golem Hit', 'Iron Golem Throw', 'Iron Golem Walk', 'Item Break', 'Item Pickup', 'Lava', 'Lava Pop', 'Level Up', 'Magmacube Jump', 'Magmacube Walk', 'Magmacube Walk 2', 'Minecart Base', 'Minecart Inside', 'Note Bass', 'Note Bass Guitar', 'Note Piano', 'Note Pling', 'Note Snare Drum', 'Note Sticks', 'Orb Pickup', 'Pig Death', 'Pig Idle', 'Pig Walk', 'Piston Extended', 'Piston Retract', 'Portal', 'Portal Travel', 'Portal Trigger', 'Sheep Idle', 'Sheep Shear', 'Sheep Walk', 'Shoot Arrow', 'Silverfish Hit', 'Silverfish Idle', 'Silverfish Kill', 'Silverfish Walk', 'Skeleton Death', 'Skeleton Hurt', 'Skeleton Idle', 'Skeleton Walk', 'Slime Attack', 'Slime Walk', 'Slime Walk 2', 'Spider Death', 'Spider Idle', 'Spider Walk', 'Splash', 'Splash 2', 'Step Grass', 'Step Gravel', 'Step Ladder', 'Step Sand', 'Step Snow', 'Step Stone', 'Step Wood', 'Step Wool', 'Successful Hit', 'Swim', 'Villager Death', 'Villager Haggle', 'Villager Hit', 'Villager Idle', 'Villager No', 'Villager Yes', 'Water', 'Wither Death', 'Wither Hurt', 'Wither Idle', 'Wither Shoot', 'Wither Spawn', 'Wolf Bark', 'Wolf DEath', 'Wolf Growl', 'Wolf Howl', 'Wolf Hurt', 'Wolf Pant', 'Wolf Shake', 'Wolf Walk', 'Wolf Whine', 'Wood Click', 'Zombie Death', 'Zombie Hurt', 'Zombie Idle', 'Zombie Infect', 'Zombie Metal', 'Zombie Pig Angry', 'Zombie Pig Death', 'Zombie Pig Hurt', 'Zombie Pig Idle', 'Zombie Pig Remedy', 'Zombie Pig Unfect', 'Zombie Remedy', 'Zombie Unfect', 'Zombie Wood', 'Zombie Wood Break' ], 'Ambience Cave'));
-	this.data.push(new AttribtueValue('Volume', 'volume', 100, 0));
+	this.data.push(new AttributeValue('Volume', 'volume', 100, 0));
 	this.data.push(new AttributeValue('Pitch', 'pitch', 0, 0));
 }
 

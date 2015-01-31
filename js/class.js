@@ -13,12 +13,15 @@ function Class(name)
 	// Class data
 	this.data = [
 		new StringValue('Name', 'name', name),
+		new StringValue('Prefix', 'name', name),
 		new StringValue('Group', 'group', 'class'),
 		new IntValue('Max Level', 'max-level', 40),
 		new ListValue('Parent', 'parent', ['None'], 'None'),
 		new ListValue('Permission', 'needs-permission', ['True', 'False'], 'False'),
 		new AttributeValue('Health', 'health', 20, 0),
 		new AttributeValue('Mana', 'mana', 20, 0),
+		new DoubleValue('Mana Regen', 'mana-regen', 1, 0),
+		new ListValue('Skill Tree', 'tree', [ 'Basic Horizontal', 'Basic Vertical', 'Level Horizontal', 'Level Vertical', 'Requirement' ], 'Requirement'),
 		new IndexListValue('Combo', 'combo', [ 'Not All Left', 'Start Left', 'Start Right', 'Start Shift', 'All' ], 0),
 		new StringListValue('Skills (one per line)', 'skills', []),
 		new ListValue('Icon', 'icon', materialList, 'Jack O Lantern'),
@@ -51,12 +54,12 @@ Class.prototype.createFormHTML = function()
 	var h = document.createElement('hr');
 	form.appendChild(h);
 	
-	this.data[3].list.splice(1, this.data[3].list.length - 1);
+	this.data[4].list.splice(1, this.data[4].list.length - 1);
 	for (var i = 0; i < classes.length; i++)
 	{
 		if (classes[i] != this) 
 		{
-			this.data[3].list.push(classes[i].data[0].value);
+			this.data[4].list.push(classes[i].data[0].value);
 		}
 	}
 	for (var i = 0; i < this.data.length; i++)

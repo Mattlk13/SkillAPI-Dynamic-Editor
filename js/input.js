@@ -65,6 +65,17 @@ function checkRequireValue(e)
 }
 
 /**
+ * Sets the tooltip of the input label to show a description of the value
+ *
+ * @param {string} text - the text to display in the tooltip
+ */
+function setTooltip(text)
+{
+	this.tooltip = text;
+	return this;
+}
+
+/**
  * Represents a defined list of options for a value
  * that is stored as an index instead of the names of
  * the values themselves.
@@ -91,6 +102,7 @@ function IndexListValue(name, key, list, index)
 // -- Hooking up the function at the top, see comments there -- //
 IndexListValue.prototype.requireValue = requireValue;
 IndexListValue.prototype.applyRequireValues = applyRequireValues;
+IndexListValue.prototype.setTooltip = setTooltip;
 
 /**
  * Creates the form HTML for the value and appends
@@ -102,6 +114,7 @@ IndexListValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
+	if (this.tooltip) this.label.title = this.tooltip;
 	target.appendChild(this.label);
 	
 	this.select = document.createElement('select');
@@ -198,6 +211,7 @@ function ListValue(name, key, list, value)
 // -- Hooking up the function at the top, see comments there -- //
 ListValue.prototype.requireValue = requireValue;
 ListValue.prototype.applyRequireValues = applyRequireValues;
+ListValue.prototype.setTooltip = setTooltip;
 
 /**
  * Creates the form HTML for the value and appends
@@ -209,6 +223,7 @@ ListValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
+	if (this.tooltip) this.label.title = this.tooltip;
 	target.appendChild(this.label);
 	
 	this.select = document.createElement('select');
@@ -317,6 +332,7 @@ function AttributeValue(name, key, base, scale)
 // -- Hooking up the function at the top, see comments there -- //
 AttributeValue.prototype.requireValue = requireValue;
 AttributeValue.prototype.applyRequireValues = applyRequireValues;
+AttributeValue.prototype.setTooltip = setTooltip;
 
 /**
  * Creates the form HTML for the value and appends
@@ -328,6 +344,7 @@ AttributeValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
+	if (this.tooltip) this.label.title = this.tooltip;
 	target.appendChild(this.label);
 	
 	this.baseBox = document.createElement('input');
@@ -452,6 +469,7 @@ function DoubleValue(name, key, value)
 // -- Hooking up the function at the top, see comments there -- //
 DoubleValue.prototype.requireValue = requireValue;
 DoubleValue.prototype.applyRequireValues = applyRequireValues;
+DoubleValue.prototype.setTooltip = setTooltip;
 
 /**
  * Creates the form HTML for the value and appends
@@ -463,6 +481,7 @@ DoubleValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
+	if (this.tooltip) this.label.title = this.tooltip;
 	target.appendChild(this.label);
 	
 	this.box = document.createElement('input');
@@ -552,6 +571,7 @@ function IntValue(name, key, value)
 // -- Hooking up the function at the top, see comments there -- //
 IntValue.prototype.requireValue = requireValue;
 IntValue.prototype.applyRequireValues = applyRequireValues;
+IntValue.prototype.setTooltip = setTooltip;
 
 /**
  * Creates the form HTML for the value and appends
@@ -563,6 +583,7 @@ IntValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
+	if (this.tooltip) this.label.title = this.tooltip;
 	target.appendChild(this.label);
 	
 	this.box = document.createElement('input');
@@ -652,6 +673,7 @@ function StringValue(name, key, value)
 // -- Hooking up the functions at the top, see comments there -- //
 StringValue.prototype.requireValue = requireValue;
 StringValue.prototype.applyRequireValues = applyRequireValues;
+StringValue.prototype.setTooltip = setTooltip;
 
 /**
  * Creates the form HTML for the value and appends
@@ -663,6 +685,7 @@ StringValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
+	if (this.tooltip) this.label.title = this.tooltip;
 	target.appendChild(this.label);
 	
 	this.box = document.createElement('input');
@@ -751,6 +774,7 @@ function StringListValue(name, key, value)
 // -- Hooking up the function at the top, see comments there -- //
 StringListValue.prototype.requireValue = requireValue;
 StringListValue.prototype.applyRequireValues = applyRequireValues;
+StringListValue.prototype.setTooltip = setTooltip;
 
 /**
  * Creates the form HTML for the value and appends
@@ -763,6 +787,7 @@ StringListValue.prototype.createHTML = function(target)
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
 	this.label.className = 'areaLabel';
+	if (this.tooltip) this.label.title = this.tooltip;
 	target.appendChild(this.label);
 	
 	var content = '';
