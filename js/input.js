@@ -738,7 +738,13 @@ StringValue.prototype.update = function()
  */ 
 StringValue.prototype.getSaveString = function(spacing)
 {	
-	return spacing + this.key + ": '" + this.value + "'\n";
+	var enclosing = "'";
+	if (this.value.indexOf("'") >= 0)
+	{
+		if (this.value.indexOf('"') >= 0) this.value = this.value.replace("'", "");
+		else enclosing = '"';
+	}
+	return spacing + this.key + ": " + enclosing + this.value + enclosing + "\n";
 }
 
 /**
@@ -850,7 +856,13 @@ StringListValue.prototype.getSaveString = function(spacing)
 	var result = spacing + this.key + ':\n';
 	for (var i = 0; i < this.value.length; i++)
 	{
-		result += spacing + "- '" + this.value[i] + "'\n";
+		var enclosing = "'";
+		if (this.value[i].indexOf("'") >= 0)
+		{
+			if (this.value[i].indexOf('"') >= 0) this.value[i] = this.value[i].replace("'", "");
+			else enclosing = '"';
+		}
+		result += spacing + "- " + enclosing + this.value[i] + enclosing + "\n";
 	}
 	return result;
 }

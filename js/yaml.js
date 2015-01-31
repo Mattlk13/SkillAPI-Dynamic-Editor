@@ -93,6 +93,7 @@ YAMLObject.prototype.parse = function(lines, index, indent)
 			{
 				var str = lines[index].substring(indent + 2);
 				if (str.charAt(0) == '\'') str = str.substring(1, str.length - 1);
+				else if (str.charAt(0) == '"') str = str.substring(1, str.length - 1);
 				stringList.push(str);
 			}
 			this[key] = stringList;
