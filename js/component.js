@@ -1021,6 +1021,7 @@ function MechanicPotion()
 	this.description = 'Applies a potion effect to the target for a duration.';
 	
 	this.data.push(new ListValue('Potion', 'potion', [ 'Absorption', 'Blindness', 'Confusion', 'Damage Resistance', 'Fast Digging', 'Fire Resistance', 'Health Boost', 'Hunger', 'Increase Damage', 'Invisibility', 'Jump', 'Night Vision', 'Poison', 'Regeneration', 'Saturation', 'Slow', 'Slow Digging', 'Speed', 'Water Breathing', 'Weakness', 'Wither' ], 'Absorption'));
+	this.data.push(new ListValue('Ambient Particles', 'ambient', [ 'True', 'False' ], 'True'));
 	this.data.push(new AttributeValue('Tier', 'tier', 1, 0));
 	this.data.push(new AttributeValue('Seconds', 'seconds', 3, 1));
 }
