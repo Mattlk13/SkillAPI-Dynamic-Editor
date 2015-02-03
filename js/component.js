@@ -674,7 +674,7 @@ function ConditionPotion()
 	
 	this.description = 'Applies child components when the target has the potion effect.';
 	
-	this.data.psuh(new ListValue('Type', 'type', [ 'Active', 'Not Active' ], 'Active'));
+	this.data.push(new ListValue('Type', 'type', [ 'Active', 'Not Active' ], 'Active'));
 	this.data.push(new ListValue('Potion', 'potion', [ 'Any', 'Absorption', 'Blindness', 'Confusion', 'Damage Resistance', 'Fast Digging', 'Fire Resistance', 'Health Boost', 'Hunger', 'Increase Damage', 'Invisibility', 'Jump', 'Night Vision', 'Poison', 'Regeneration', 'Saturation', 'Slow', 'Slow Digging', 'Speed', 'Water Breathing', 'Weakness', 'Wither' ], 'Any'));
 }
 
