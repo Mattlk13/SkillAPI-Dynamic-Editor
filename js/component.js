@@ -97,6 +97,8 @@ var Mechanic = {
 	WOLF:                { name: 'Wolf',                container: true,  construct: MechanicWolf               }
 };
 
+var saveIndex;
+
 /**
  * Represents a component of a dynamic skill
  * 
@@ -264,9 +266,9 @@ Component.prototype.update = function()
  *
  * @param {string} spacing - spacing to put before the data
  */
-Component.prototype.getSaveString = function(spacing)
+Component.prototype.getSaveString = function(spacing, index)
 {
-	var result = spacing + this.name + ":\n";
+	var result = spacing + this.name + '-' + String.fromCharCode(saveIndex + 96) + ":\n";
 	result += spacing + "  type: '" + this.type + "'\n";
 	if (this.data.length > 0)
 	{
@@ -284,6 +286,7 @@ Component.prototype.getSaveString = function(spacing)
 			result += this.components[j].getSaveString(spacing + '    ');
 		}
 	}
+	saveIndex++;
 	return result;
 }
 

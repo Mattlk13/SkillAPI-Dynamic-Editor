@@ -392,11 +392,14 @@ function loadSection(data)
 				{	
 					list = Mechanic;
 				}
+				
+				var key = y;
+				if (key.indexOf('-') > 0) key = key.substring(0, key.indexOf('-'));
 				if (list !== undefined)
 				{
 					for (var z in list)
 					{
-						if (list[z].name == y)
+						if (list[z].name.toLowerCase() == key.toLowerCase())
 						{
 							var component = new list[z].construct();
 							component.parent = this;
