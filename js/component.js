@@ -266,9 +266,18 @@ Component.prototype.update = function()
  *
  * @param {string} spacing - spacing to put before the data
  */
-Component.prototype.getSaveString = function(spacing, index)
+Component.prototype.getSaveString = function(spacing)
 {
-	var result = spacing + this.name + '-' + String.fromCharCode(saveIndex + 96) + ":\n";
+	var id = '';
+	var index = saveIndex;
+	while (index > 0 || id.length == 0)
+	{
+		id += String.fromCharCode((index % 26) + 97);
+		index = Math.floor(index / 26);
+	}
+	var result = spacing + this.name + '-' + id + ":\n";
+	saveIndex++;
+	
 	result += spacing + "  type: '" + this.type + "'\n";
 	if (this.data.length > 0)
 	{
@@ -286,7 +295,6 @@ Component.prototype.getSaveString = function(spacing, index)
 			result += this.components[j].getSaveString(spacing + '    ');
 		}
 	}
-	saveIndex++;
 	return result;
 }
 

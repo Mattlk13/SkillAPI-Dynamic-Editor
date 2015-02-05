@@ -85,6 +85,9 @@ depend('material', function() {
 			index = Math.min(index, skills.length - 1);
 			activeSkill = skills[index];
 			list.selectedIndex = index;
+			
+			activeSkill.apply();
+			showSkillPage('builder');
 		});
 	});
 	
@@ -303,6 +306,11 @@ function loadSkills(e) {
 			if (isSkillNameTaken(key))
 			{
 				getSkill(key).load(data[key]);
+				if (getSkill(key) == activeSkill)
+				{
+					activeSkill.apply();
+					showSkillPage('builder');
+				}
 			}
 			else
 			{
@@ -327,6 +335,10 @@ function loadClasses(e) {
 			if (isClassNameTaken(key))
 			{
 				getClass(key).load(data[key]);
+				if (getClass(key) == activeClass)
+				{
+					activeClass.createFormHTML();
+				}
 			}
 			else
 			{
