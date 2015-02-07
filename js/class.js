@@ -27,14 +27,7 @@ function Class(name)
 		new ListValue('Icon', 'icon', materialList, 'Jack O Lantern'),
 		new IntValue('Icon Data', 'icon-data', 0),
 		new StringListValue('Icon Lore', 'icon-lore', [
-			'&d{name} &7({level}/{max})',
-			'&2Type: &6{type}',
-			'',
-			'{req:level}Level: {attr:level}',
-			'{req:cost}Cost: {attr:cost}',
-			'',
-			'&2Mana: {attr:mana}',
-			'&2Cooldown: {attr:cooldown}'
+			'&d' + name
 		])
 	];
 }
