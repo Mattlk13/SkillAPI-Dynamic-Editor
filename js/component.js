@@ -80,6 +80,7 @@ var Mechanic = {
 	LAUNCH:              { name: 'Launch',              container: false, construct: MechanicLaunch             },
 	LIGHTNING:           { name: 'Lightning',           container: false, construct: MechanicLightning          },
 	MANA:                { name: 'Mana',                container: false, construct: MechanicMana               },
+	MESSAGE:             { name: 'Message',             container: false, construct: MechanicMessage            },
 	PARTICLE:            { name: 'Particle',            container: false, construct: MechanicParticle           },
 	PARTICLE_PROJECTILE: { name: 'Particle Projectile', container: true,  construct: MechanicParticleProjectile },
 	PASSIVE:             { name: 'Passive',             container: true,  construct: MechanicPassive            },
@@ -117,7 +118,7 @@ function Component(name, type, container, parent)
 	this.parent = parent;
 	this.html = undefined;
 	this.components = [];
-	this.data = [];
+	this.data = [new StringValue('Icon Key', 'icon-key', '')];
 	
 	this.dataKey = 'data';
 	this.componentKey = 'children';
@@ -212,16 +213,16 @@ Component.prototype.createFormHTML = function()
 		form.appendChild(desc);
 	}
 	
-	if (this.data.length > 0) 
+	if (this.data.length > 1) 
 	{
 		var h = document.createElement('hr');
 		form.appendChild(h);
-	}
-	
-	for (var i = 0; i < this.data.length; i++)
-	{
-	this.data[i].hidden = false;
-		this.data[i].createHTML(form);
+		
+		for (var i = 0; i < this.data.length; i++)
+		{
+			this.data[i].hidden = false;
+			this.data[i].createHTML(form);
+		}
 	}
 	
 	var hr = document.createElement('hr');
@@ -942,6 +943,16 @@ function MechanicMana()
 	this.data.push(new AttributeValue('Value', 'value', 1, 0));
 }
 
+extend('MechanicMessage', 'Component');
+function MechanicMessage()
+{
+	this.super('Message', Type.MECHANIC, false);
+	
+	this.description = 'Sends a message to each player target'
+	
+	this.data.push(new StringValue('Message', 'message', 'text'));
+}
+
 extend('MechanicParticle', 'Component');
 function MechanicParticle()
 {
@@ -1010,7 +1021,7 @@ function MechanicPassive()
 	
 	this.description = 'Applies child components continuously every period. The seconds value below is the period or how often it applies.';
 	
-	this.data.push(new DoubleValue('Seconds', 'seconds', 1));
+	this.data.push(new AttributeValue('Seconds', 'seconds', 1, 0));
 }
 
 extend('MechanicPermission', 'Component');
@@ -1021,7 +1032,7 @@ function MechanicPermission()
 	this.description = 'Grants each player target a permission for a limited duration. This mechanic requires Vault with an accompanying permissions plugin in order to work.';
 	
 	this.data.push(new StringValue('Permission', 'perm', 'plugin.perm.key'));
-	this.data.push(new AttributeValue('Seconds', 'seconds', 3));
+	this.data.push(new AttributeValue('Seconds', 'seconds', 3, 0));
 }
 
 extend('MechanicPotion', 'Component');

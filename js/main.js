@@ -363,17 +363,17 @@ function loadSection(data)
 			{
 				for (var i = 0; i < this.data.length; i++)
 				{
-					if (this.data[i].key == y)
+					if (this.data[i].key == y && this.data[i].load)
 					{
 						this.data[i].load(attribs[y]);
 						break;
 					}
-					else if (this.data[i].key + '-base' == y)
+					else if (this.data[i].key + '-base' == y && this.data[i].loadBase)
 					{
 						this.data[i].loadBase(attribs[y]);
 						break;
 					}
-					else if (this.data[i].key + '-scale' == y)
+					else if (this.data[i].key + '-scale' == y && this.data[i].loadScale)
 					{
 						this.data[i].loadScale(attribs[y]);
 						break;
