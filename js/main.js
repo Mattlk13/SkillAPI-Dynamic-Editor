@@ -63,9 +63,17 @@ depend('material', function() {
 				activeComponent.update();
 			}
 			var data = 'loaded: false\n';
-			for (var i = 0; i < skills.length; i++)
+            var alphabetic = skills.splice(0);
+            alphabetic.sort(function(a, b) {
+                var an = a.data[0].value;
+                var bn = b.data[0].value;
+                if (an > bn) return 1;
+                if (an < bn) return -1;
+                return 0;
+            });
+			for (var i = 0; i < alphabetic.length; i++)
 			{
-				data += skills[i].getSaveString();
+				data += alphabetic[i].getSaveString();
 			}
 			saveToFile('skills.yml', data);
 		});
