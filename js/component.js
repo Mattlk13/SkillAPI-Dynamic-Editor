@@ -76,6 +76,8 @@ var Mechanic = {
 	FLAG_CLEAR:          { name: 'Flag Clear',          container: false, construct: MechanicFlagClear          },
 	FLAG_TOGGLE:         { name: 'Flag Toggle',         container: false, construct: MechanicFlagToggle         },
 	HEAL:                { name: 'Heal',                container: false, construct: MechanicHeal               },
+	IMMUNITY:            { name: 'Immunity',            container: false, construct: MechanicImmunity           },
+	ITEM:                { name: 'Item',                container: false, construct: MechanicItem               },
 	ITEM_PROJECTILE:     { name: 'Item Projectile',     container: true,  construct: MechanicItemProjectile     },
 	LAUNCH:              { name: 'Launch',              container: false, construct: MechanicLaunch             },
 	LIGHTNING:           { name: 'Lightning',           container: false, construct: MechanicLightning          },
@@ -86,6 +88,7 @@ var Mechanic = {
 	PASSIVE:             { name: 'Passive',             container: true,  construct: MechanicPassive            },
 	PERMISSION:          { name: 'Permission',          container: false, construct: MechanicPermission         },
 	POTION:              { name: 'Potion',              container: false, construct: MechanicPotion             },
+	POTION_PROJECTILE:   { name: 'Potion Projectile',   container: true,  construct: MechanicPotionProjectile   },
 	PROJECTILE:          { name: 'Projectile',          container: true,  construct: MechanicProjectile         },
 	PUSH:                { name: 'Push',                container: false, construct: MechanicPush               },
 	REPEAT:              { name: 'Repeat',              container: true,  construct: MechanicRepeat             },
@@ -888,6 +891,33 @@ function MechanicHeal()
 	this.data.push(new AttributeValue("Value", "value", 3, 1));
 }
 
+extend('MechanicImmunity', 'Component');
+function MechanicImmunity()
+{
+	this.super('Immunity', Type.MECHANIC, false);
+	
+	this.description = 'Provides damage immunity from one source for a duration.'
+	
+	this.data.push(new ListValue('Type', 'type', [ 'Block Explosion', 'Contact', 'Drowning', 'Entity Attack', 'Entity Explosion', 'Fall', 'Falling Block', 'Fire', 'Fire Tick', 'Lava', 'Lightning', 'Magic', 'Melting', 'Poison', 'Projectile', 'Starvation', 'Suffocation', 'Suicide', 'Thorns', 'Void', 'Wither' ], 'Poison'));
+	this.data.push(new AttributeValue('Seconds', 'seconds', 3, 0));
+}
+
+extend('MechanicItem', 'Component');
+function MechanicItem()
+{
+	this.super('Item', Type.MECHANIC, false);
+	
+	this.description = 'Gives each player target the item defined by the settings.';
+	
+	this.data.push(new ListValue('Material', 'material', materialList, 'Arrow'));
+	this.data.push(new IntValue('Amount', 'amount', 1));
+	this.data.push(new IntValue('Data', 'data', 0));
+	this.data.push(new ListValue('Custom', 'custom', [ 'True', 'False' ], 'False'));
+	
+	this.data.push(new StringValue('Name', 'name', 'Name').requireValue('custom', [ 'True' ]));
+	this.data.push(new StringListValue('Lore', 'lore', []).requireValue('custom', [ 'True' ]));
+}
+
 extend('MechanicItemProjectile', 'Component');
 function MechanicItemProjectile()
 {
@@ -964,6 +994,9 @@ function MechanicParticle()
 	this.data.push(new ListValue('Arrangement', 'arrangement', [ 'Circle', 'Hemisphere', 'Sphere' ], 'Circle'));
 	this.data.push(new AttributeValue('Radius', 'radius', 4, 0));
 	this.data.push(new AttributeValue('Amount', 'amount', 20, 0));
+	this.data.push(new DoubleValue('Forward Offset', 'forward', 0));
+	this.data.push(new DoubleValue('Upward Offset', 'upward', 0));
+	this.data.push(new DoubleValue('Right Offset', 'right', 0));
 	
 	// Circle arrangement direction
 	this.data.push(new ListValue('Circle Direction', 'direction', [ 'XY', 'XZ', 'YZ' ], 'XZ').requireValue('arrangement', [ 'Circle' ]));
@@ -1046,6 +1079,17 @@ function MechanicPotion()
 	this.data.push(new ListValue('Ambient Particles', 'ambient', [ 'True', 'False' ], 'True'));
 	this.data.push(new AttributeValue('Tier', 'tier', 1, 0));
 	this.data.push(new AttributeValue('Seconds', 'seconds', 3, 1));
+}
+
+extend('MechanicPotionProjectile', 'Component');
+function MechanicPotionProjectile()
+{
+	this.super('Potion Projectile', Type.MECHANIC, true);
+	
+	this.description = 'Drops a splash potion from each target that does not apply potion effects by default. This will apply child elements when the potion lands. The targets supplied will be everything hit by the potion. If nothing is hit by the potion, the target will be the location it landed.';
+	
+	this.data.push(new ListValue('Type', 'type', [ 'Fire Resistance', 'Instant Damage', 'Instant Heal', 'Invisibility', 'Night Vision', 'Poison', 'Regen', 'Slowness', 'Speed', 'Strength', 'Water', 'Water Breathing', 'Weakness' ], 'Fire Resistance'));
+	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy"));
 }
 
 extend('MechanicProjectile', 'Component');
