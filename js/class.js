@@ -15,6 +15,7 @@ function Class(name)
 		new StringValue('Name', 'name', name),
 		new StringValue('Prefix', 'name', name),
 		new StringValue('Group', 'group', 'class'),
+		new StringValue('Mana Name', 'mana', '&2Mana'),
 		new IntValue('Max Level', 'max-level', 40),
 		new ListValue('Parent', 'parent', ['None'], 'None'),
 		new ListValue('Permission', 'needs-permission', ['True', 'False'], 'False'),
@@ -47,12 +48,12 @@ Class.prototype.createFormHTML = function()
 	var h = document.createElement('hr');
 	form.appendChild(h);
 	
-	this.data[4].list.splice(1, this.data[4].list.length - 1);
+	this.data[5].list.splice(1, this.data[5].list.length - 1);
 	for (var i = 0; i < classes.length; i++)
 	{
 		if (classes[i] != this) 
 		{
-			this.data[4].list.push(classes[i].data[0].value);
+			this.data[5].list.push(classes[i].data[0].value);
 		}
 	}
 	for (var i = 0; i < this.data.length; i++)
