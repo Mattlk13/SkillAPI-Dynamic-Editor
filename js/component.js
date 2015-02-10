@@ -90,6 +90,7 @@ var Mechanic = {
 	POTION:              { name: 'Potion',              container: false, construct: MechanicPotion             },
 	POTION_PROJECTILE:   { name: 'Potion Projectile',   container: true,  construct: MechanicPotionProjectile   },
 	PROJECTILE:          { name: 'Projectile',          container: true,  construct: MechanicProjectile         },
+	PURGE:               { name: 'Purge',               container: false, construct: MechanicPurge              },
 	PUSH:                { name: 'Push',                container: false, construct: MechanicPush               },
 	REPEAT:              { name: 'Repeat',              container: true,  construct: MechanicRepeat             },
 	SOUND:               { name: 'Sound',               container: false, construct: MechanicSound              },
@@ -1112,6 +1113,17 @@ function MechanicProjectile()
 	// Rain values
 	this.data.push(new AttributeValue('Height', 'height', 8, 0).requireValue('spread', [ 'Rain' ]));
 	this.data.push(new AttributeValue('Radius', 'radius', 2, 0).requireValue('spread', [ 'Rain' ]));
+}
+
+extend('MechanicPurge', 'Component');
+function MechanicPurge() 
+{
+	this.super('Purge', Type.MECHANIC, false);
+	
+	this.description = 'Purges the target of positive potion effects or statuses';
+	
+	this.data.push(new ListValue('Potion', 'potion', [ 'None', 'All', 'Absorption', 'Damage Resistance', 'Fast Digging', 'Fire Resistance', 'Health Boost', 'Increase Damage', 'Invisibility', 'Jump', 'Night Vision', 'Regeneration', 'Saturation', 'Speed', 'Water Breathing' ], 'All'));
+	this.data.push(new ListValue('Status', 'status', [ 'None', 'All', 'Absorb', 'Invincible' ], 'All'))
 }
 
 extend('MechanicPush', 'Component');
