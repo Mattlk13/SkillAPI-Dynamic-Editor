@@ -13,7 +13,7 @@ function Class(name)
 	// Class data
 	this.data = [
 		new StringValue('Name', 'name', name),
-		new StringValue('Prefix', 'name', name),
+		new StringValue('Prefix', 'prefix', name),
 		new StringValue('Group', 'group', 'class'),
 		new StringValue('Mana Name', 'mana', '&2Mana'),
 		new IntValue('Max Level', 'max-level', 40),
