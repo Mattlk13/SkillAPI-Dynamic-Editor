@@ -63,7 +63,7 @@ depend('material', function() {
 				activeComponent.update();
 			}
 			var data = 'loaded: false\n';
-            var alphabetic = skills.splice(0);
+            var alphabetic = skills.slice(0);
             alphabetic.sort(function(a, b) {
                 var an = a.data[0].value;
                 var bn = b.data[0].value;
