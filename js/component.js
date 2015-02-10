@@ -1023,7 +1023,7 @@ function MechanicParticleProjectile()
 	
 	this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone'));
 	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Flames', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Potal', 'Potion Break', 'Red Dust', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ], 'Angry Villager'));
-	this.data.push(new DoubleValue('Frequency', 'frequency', 0.25));
+	this.data.push(new DoubleValue('Frequency', 'frequency', 0.1));
 	this.data.push(new AttributeValue('Speed', 'velocity', 3, 0));
 	this.data.push(new AttributeValue('Angle', 'angle', 30, 0));
 	this.data.push(new AttributeValue('Amount', 'amount', 1, 0));
