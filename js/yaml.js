@@ -121,8 +121,10 @@ YAMLObject.prototype.parse = function(lines, index, indent)
 		{
 			var value = lines[index].substring(lines[index].indexOf(':') + 2);
 			if (value.charAt(0) == '\'') value = value.substring(1, value.length - 1);
-			else if (Regex.FLOAT.test(value)) value = parseFloat(value);
-			else if (Regex.INT.test(value)) value = parseInt(value);
+            else if (!isNaN(value)) {
+                if (Regex.INT.test(value)) value = parseInt(value);
+                else value = parseFloat(value);
+            }
 			this[key] = value;
 		}
 		
