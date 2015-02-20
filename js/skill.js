@@ -27,6 +27,7 @@ function Skill(name)
 		new AttributeValue('Cost', 'cost', 1, 0),
 		new AttributeValue('Cooldown', 'cooldown', 0, 0),
 		new AttributeValue('Mana', 'mana', 0, 0),
+		new StringValue('Cast Message', 'msg', '&6{player} &2has cast &6{skill}'),
 		new ListValue('Icon', 'icon', materialList, 'Jack O Lantern'),
 		new IntValue('Icon Data', 'icon-data', 0),
 		new StringListValue('Icon Lore', 'icon-lore', [
