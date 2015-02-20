@@ -123,6 +123,9 @@ function Component(name, type, container, parent)
 	this.html = undefined;
 	this.components = [];
 	this.data = [new StringValue('Icon Key', 'icon-key', '')];
+    if (this.type == Type.MECHANIC) {
+        this.data.push(new ListValue('Counts as Cast', 'counts', [ 'True', 'False' ], 'True'));
+    }
 	
 	this.dataKey = 'data';
 	this.componentKey = 'children';
@@ -357,6 +360,9 @@ function TriggerPhysicalDamage()
 	
 	this.description = 'Applies skill effects when a player deals physical (or non-skill) damage. This includes melee attacks and firing a bow.';
 	
+    this.data.push(new ListValue('Target Caster', 'target', [ 'True', 'False' ], 'True')
+        .setTooltip('True makes children target the caster. False makes children target the damaged entity')
+    ); 
 	this.data.push(new ListValue('Type', 'type', [ 'Both', 'Melee', 'Projectile' ], 'Both')
 		.setTooltip('The type of damage dealt')
 	);
@@ -375,9 +381,11 @@ function TriggerSkillDamage()
 	
 	this.description = 'Applies skill effects when a player deals damage with a skill.';
 	
+    this.data.push(new ListValue('Target Caster', 'target', [ 'True', 'False' ], 'True')
+        .setTooltip('True makes children target the caster. False makes children target the damaged entity')
+    ); 
 	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0)
 		.setTooltip('The minimum damage that needs to be dealt')
-		
 	);
 	this.data.push(new DoubleValue("Max Damage", "dmg-max", 999)
 		.setTooltip('The maximum damage that needs to be dealt')
@@ -391,6 +399,9 @@ function TriggerTookPhysicalDamage()
 	
 	this.description = 'Applies skill effects when a player takes physical (or non-skill) damage. This includes melee attacks and projectiles not fired by a skill.';
 	
+    this.data.push(new ListValue('Target Caster', 'target', [ 'True', 'False' ], 'True')
+        .setTooltip('True makes children target the caster. False makes children target the attacking entity')
+    ); 
 	this.data.push(new ListValue('Type', 'type', [ 'Both', 'Melee', 'Projectile' ], 'Both')
 		.setTooltip('The type of damage dealt')
 	);
@@ -409,6 +420,9 @@ function TriggerTookSkillDamage()
 	
 	this.description = 'Applies skill effects when a player takes damage from a skill other than their own.';
 	
+    this.data.push(new ListValue('Target Caster', 'target', [ 'True', 'False' ], 'True')
+        .setTooltip('True makes children target the caster. False makes children target the attacking entity')
+    ); 
 	this.data.push(new DoubleValue("Min Damage", "dmg-min", 0)
 		.setTooltip('The minimum damage that needs to be dealt')
 	);
