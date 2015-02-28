@@ -30,6 +30,7 @@ var Target = {
 	CONE     : { name: 'Cone',     container: true, construct: TargetCone     },
 	LINEAR   : { name: 'Linear',   container: true, construct: TargetLinear   },
 	LOCATION : { name: 'Location', container: true, construct: TargetLocation },
+    NEAREST  : { name: 'Nearest',  container: true, construct: TargetNearest  },
  	SELF     : { name: 'Self',     container: true, construct: TargetSelf     },
 	SINGLE   : { name: 'Single',   container: true, construct: TargetSingle   }
 };
@@ -40,6 +41,7 @@ var Target = {
 var Condition = {
 	BIOME:       { name: 'Biome',       container: true, construct: ConditionBiome      },
 	CHANCE:      { name: 'Chance',      container: true, construct: ConditionChance     },
+    CLASS:       { name: 'Class',       container: true, construct: ConditionClass      },
 	CLASS_LEVEL: { name: 'Class Level', container: true, construct: ConditionClassLevel },
 	DIRECTION:   { name: 'Direction',   container: true, construct: ConditionDirection  },
 	ELEVATION:   { name: 'Elevation',   container: true, construct: ConditionElevation  },
@@ -462,7 +464,7 @@ function TargetCone()
 {
 	this.super('Cone', Type.TARGET, true);
 	
-	this.description = 'Targets all units in a line in front of the current target (the casting player is the default target).';
+	this.description = 'Targets all units in a line in front of the current target (the casting player is the default target). If you include the caster, that counts towards the max amount.';
 	
 	this.data.push(new AttributeValue("Range", "range", 5, 0)
 		.setTooltip('The max distance any target can be')
@@ -523,6 +525,30 @@ function TargetLocation()
 	);
 }
 
+extend('TargetNearest', 'Component');
+function TargetArea()
+{
+	this.super('Area', Type.TARGET, true);
+	
+	this.description = 'Targets the closest unit(s) in a radius from the current target (the casting player is the default target). If you include the caster, that counts towards the max number.';
+	
+	this.data.push(new AttributeValue("Radius", "radius", 3, 0)
+		.setTooltip('The radius of the area to target')
+	);
+	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
+		.setTooltip('The alignment of targets to get')
+	);
+	this.data.push(new ListValue("Through Wall", "wall", ['True', 'False'], 'False')
+		.setTooltip('Whether or not to allow targets to be on the other side of a wall')
+	);
+	this.data.push(new ListValue("Include Caster", "caster", [ 'True', 'False' ], 'False')
+		.setTooltip('Whether or not to include the caster in the target list')
+	);
+	this.data.push(new AttributeValue("Max Targets", "max", 1, 0)
+		.setTooltip('The max amount of targets to apply children to')
+	);
+}
+
 extend('TargetSelf', 'Component');
 function TargetSelf()
 {
@@ -573,6 +599,17 @@ function ConditionChance()
 	this.description = 'Rolls a chance to apply child components.';
 	
 	this.data.push(new AttributeValue('Chance', 'chance', 25, 0));
+}
+
+extend('ConditionClass', 'Component');
+function ConditionClass()
+{
+    this.super('Class', Type.CONDITION, true);
+    
+    this.description = 'Applies child components when the target is the given class or optionally a profession of that class. For example, if you check for "Fighter" which professes into "Warrior", a "Warrior" will pass the check if you do not enable "exact".';
+    
+    this.data.push(new StringValue('Class', 'class', 'Fighter'));
+    this.data.push(new ListValue('Exact', 'exact', [ 'True', 'False' ], 'False'))
 }
 
 extend('ConditionClassLevel', 'Component');
@@ -1118,7 +1155,6 @@ function MechanicProjectile()
 	this.data.push(new ListValue('Projectile', 'projectile', [ 'Arrow', 'Egg', 'Ghast Fireball', 'Snowball' ], 'Arrow'));
 	this.data.push(new ListValue('Cost', 'cost', [ 'None', 'All', 'One' ], 'None'));
 	this.data.push(new AttributeValue('Speed', 'speed', 3, 0));
-	this.data.push(new AttributeValue('Angle', 'angle', 30, 0));
 	this.data.push(new AttributeValue('Amount', 'amount', 1, 0));
 	
 	// Cone values
