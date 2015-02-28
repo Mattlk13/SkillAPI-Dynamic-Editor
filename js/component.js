@@ -526,7 +526,7 @@ function TargetLocation()
 }
 
 extend('TargetNearest', 'Component');
-function TargetArea()
+function TargetNearest()
 {
 	this.super('Area', Type.TARGET, true);
 	
