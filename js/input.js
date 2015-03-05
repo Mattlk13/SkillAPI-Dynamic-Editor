@@ -229,12 +229,16 @@ ListValue.prototype.createHTML = function(target)
 	this.select = document.createElement('select');
 	this.select.id = this.key;
 	var selected = -1;
+	
+	var vLower = this.value.toLowerCase().replace('_', ' ');
 	for (var i = 0; i < this.list.length; i++)
 	{
 		var option = document.createElement('option');
 		option.innerHTML = this.list[i];
 		this.select.add(option);
-		if (this.list[i] == this.value || (selected == -1 && this.list[i] == 'None'))
+		
+		var lower = this.list[i].toLowerCase();
+		if (lower === vLower || (selected == -1 && this.list[i] == 'None'))
 		{
 			selected = i;
 		}
