@@ -65,6 +65,7 @@ var Condition = {
  * Available mechanic component data
  */
 var Mechanic = {
+    BLOCK:               { name: 'Block',               container: false, construct: MechanicBlock              },
 	CLEANSE:             { name: 'Cleanse',             container: false, construct: MechanicCleanse            },
 	COMMAND:             { name: 'Command',             container: false, construct: MechanicCommand            },
 	COOLDOWN:            { name: 'Cooldown',            container: false, construct: MechanicCooldown           },
@@ -100,6 +101,7 @@ var Mechanic = {
 	WARP:                { name: 'Warp',                container: false, construct: MechanicWarp               },
 	WARP_LOC:            { name: 'Warp Location',       container: false, construct: MechanicWarpLoc            },
 	WARP_RANDOM:         { name: 'Warp Random',         container: false, construct: MechanicWarpRandom         },
+    WARP_SWAP:           { name: 'Warp Swap',           container: false, construct: MechanicWarpSwap           },
 	WARP_TARGET:         { name: 'Warp Target',         container: false, construct: MechanicWarpTarget         },
 	WOLF:                { name: 'Wolf',                container: true,  construct: MechanicWolf               }
 };
@@ -801,6 +803,31 @@ function ConditionWater()
 
 // -- Mechanic constructors ---------------------------------------------------- //
 
+extend('MechanicBlock', 'Component');
+function MechanicBlock() 
+{
+    this.super('Block', Type.MECHANIC, false);
+    
+    this.description = 'Changes blocks to the given type of block for a limited duration.';
+    
+    this.data.push(new ListValue('Shape', 'shape', [ 'Sphere', 'Cuboid' ], 'Sphere' ));
+    this.data.push(new ListValue('Solid Only', 'solid', [ 'True', 'False' ], 'True' ));
+    this.data.push(new ListValue('Block', 'block', materialList, 'Ice'));
+    this.data.push(new IntValue('Block Data', 'data', 0));
+    this.data.push(new AttributeValue('Seconds', 'seconds', 5, 0));
+    this.data.push(new AttributeValue('Forward Offset', 'forward', 0, 0));
+    this.data.push(new AttributeValue('Upward Offset', 'upward', 0, 0));
+    this.data.push(new AttributeValue('Right Offset', 'right', 0, 0));
+    
+    // Sphere options
+    this.data.push(new AttributeValue('Radius', 'radius', 3, 0).requireValue('shape', [ 'Sphere' ]));
+    
+    // Cuboid options
+    this.data.push(new AttributeValue('Width (X)', 'width', 5, 0).requireValue('shape', [ 'Cuboid' ]));
+    this.data.push(new AttributeValue('Height (Y)', 'height', 5, 0).requireValue('shape', [ 'Cuboid' ]));
+    this.data.push(new AttributeValue('Depth (Z)', 'depth', 5, 0).requireValue('shape', [ 'Cuboid' ]));
+}
+
 extend('MechanicCleanse', 'Component');
 function MechanicCleanse()
 {
@@ -1073,7 +1100,7 @@ function MechanicParticleProjectile()
 	this.description = 'Launches a projectile using particles as its visual that applies child components upon landing. The target passed on will be the collided target or the location where it landed if it missed.';
 	
 	this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone'));
-	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Flames', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Potal', 'Potion Break', 'Red Dust', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ], 'Angry Villager'));
+	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Potal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager'));
 	this.data.push(new DoubleValue('Frequency', 'frequency', 0.1));
 	this.data.push(new AttributeValue('Speed', 'velocity', 3, 0));
 	this.data.push(new AttributeValue('Angle', 'angle', 30, 0));
@@ -1259,6 +1286,14 @@ function MechanicWarpRandom()
 	this.data.push(new ListValue('Only Horizontal', 'horizontal', [ 'True', 'False' ], 'True'));
 	this.data.push(new ListValue('Through Walls', 'walls', [ 'True', 'False' ], 'False'));
 	this.data.push(new AttributeValue('Distance', 'distance', 3, 1));
+}
+
+extend('MechanicWarpSwap', 'Component');
+function MechanicWarpSwap()
+{
+    this.super('Warp Swap', Type.MECHANIC, false);
+    
+    this.description = 'Switches the location of the caster and the target. If multiple targets are provided, this takes the first one.';
 }
 
 extend('MechanicWarpTarget', 'Component');
