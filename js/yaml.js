@@ -85,8 +85,14 @@ YAMLObject.prototype.parse = function(lines, index, indent)
 		
 		var key = lines[index].substring(indent, lines[index].indexOf(':'));
 		
+        // New empty section
+		if (lines[index].indexOf(": {}") == lines[index].length - 4)
+		{
+			this[key] = {};
+		}
+        
 		// String list
-		if (index < lines.length - 1 && lines[index + 1].charAt(indent) == '-' && countSpaces(lines[index]) == indent)
+		else if (index < lines.length - 1 && lines[index + 1].charAt(indent) == '-' && countSpaces(lines[index]) == indent)
 		{
 			var stringList = [];
 			while (++index < lines.length && lines[index].charAt(indent) == '-')
@@ -108,12 +114,6 @@ YAMLObject.prototype.parse = function(lines, index, indent)
 			var newData = new YAMLObject();
 			index = newData.parse(lines, index, newIndent) - 1;
 			this[key] = newData;
-		}
-		
-		// New empty section
-		else if (lines[index].indexOf(':') == lines[index].length - 1)
-		{
-			this[key] = {};
 		}
 		
 		// Regular value
