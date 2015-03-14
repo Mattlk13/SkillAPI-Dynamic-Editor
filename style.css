@@ -367,6 +367,10 @@ input, select, textarea {
 	float: left;
 }
 
+#skillForm .byteList, #classForm .byteList {
+    width: calc(40% - 24px);
+}
+
 #skillForm select, #classForm select {
 	background-color: #222;
 	cursor: pointer;
