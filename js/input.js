@@ -880,3 +880,128 @@ StringListValue.prototype.load = function(value)
 {	
 	this.value = value;
 }
+
+/**
+ * Represents a byte-represented list of options
+ *
+ * @param {string} name   - the display name of the value
+ * @param {string} key    - the config key of the value
+ * @param {Array}  values - the list of names for the values
+ * @param {number} value  - the current value
+ *
+ * @constructor
+ */
+function ByteListValue(name, key, values, value)
+{
+	this.name = name;
+	this.key = key;
+	this.value = value;
+	this.values = values;
+    
+	this.label = undefined;
+	this.box = undefined;
+	this.hidden = false;
+}
+
+// -- Hooking up the function at the top, see comments there -- //
+ByteListValue.prototype.requireValue = requireValue;
+ByteListValue.prototype.applyRequireValues = applyRequireValues;
+ByteListValue.prototype.setTooltip = setTooltip;
+
+/**
+ * Creates the form HTML for the value and appends
+ * it to the target element
+ *
+ * @param {Element} target - the HTML element to append to
+ */ 
+ByteListValue.prototype.createHTML = function(target) 
+{
+	this.label = document.createElement('label');
+	this.label.innerHTML = this.name;
+	this.label.className = 'areaLabel';
+	if (this.tooltip) this.label.title = this.tooltip;
+	target.appendChild(this.label);
+	
+    // Add div elements
+    this.checkboxes = [];
+    this.div = document.createElement('div');
+    this.div.className = 'byteList';
+    var html = '';
+    for (var i = 0; i < this.values.length; i++)
+    {
+        var id = this.key + '-' + this.values[i].replace(' ', '-').toLowerCase();
+        var checked = (this.value & (1 << i)) ? ' checked' : '';
+        html += '<input type="checkbox" name="byte' + i + '" id="' + id + '"' + checked + '>' + this.values[i] + '<br>';
+    }
+    this.div.innerHTML = html;
+    for (var i = 0; i < this.div.childNodes.length; i += 3) 
+    {
+        this.checkboxes[i / 3] = this.div.childNodes[i];
+    }
+    target.appendChild(this.div);
+}
+
+/**
+ * Hides the HTML elements of the value
+ */
+ByteListValue.prototype.hide = function()
+{
+	if (this.label && this.div && !this.hidden)
+	{
+		this.hidden = true;
+		this.label.style.display = 'none';
+		this.div.style.display = 'none';
+	}
+}
+
+/**
+ * Shows the HTML elements of the value
+ */
+ByteListValue.prototype.show = function()
+{
+	if (this.label && this.div && this.hidden)
+	{
+		this.hidden = false;
+		this.label.style.display = 'block';
+		this.div.style.display = 'block';
+	}
+}
+
+/**
+ * Updates the current value using the HTML elements
+ */ 
+ByteListValue.prototype.update = function()
+{
+	if (this.div) 
+	{
+        this.value = 0;
+        for (var i = 0; i < this.checkboxes.length; i++)
+        {
+            if (this.checkboxes[i].checked) 
+            {
+                this.value += (1 << i);
+            }
+        }
+	}
+}
+
+/**
+ * Retrieves the save string for the value
+ *
+ * @param {string} spacing - the spacing to go before the value
+ */ 
+ByteListValue.prototype.getSaveString = function(spacing)
+{	
+	var result = spacing + this.key + ': ' + this.value + '\n';
+	return result;
+}
+
+/**
+ * Loads a config value
+ *
+ * @param {Array} value - config string list value
+ */ 
+ByteListValue.prototype.load = function(value)
+{	
+	this.value = value;
+}

@@ -19,6 +19,7 @@ function Class(name)
 		new IntValue('Max Level', 'max-level', 40),
 		new ListValue('Parent', 'parent', ['None'], 'None'),
 		new ListValue('Permission', 'needs-permission', ['True', 'False'], 'False'),
+        new ByteListValue('Exp Sources', 'exp-source', [ 'Mob', 'Block Break', 'Block Place', 'Craft', 'Command', 'Special', 'Exp Bottle', 'Smelt', 'Quest' ], 273),
 		new AttributeValue('Health', 'health', 20, 0),
 		new AttributeValue('Mana', 'mana', 20, 0),
 		new DoubleValue('Mana Regen', 'mana-regen', 1, 0),
