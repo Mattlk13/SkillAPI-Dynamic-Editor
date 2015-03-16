@@ -156,6 +156,14 @@ var skillsActive = true;
 // Set up event listeners when the page loads
 window.onload = function() 
 {
+    var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+    var isIE = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
+    var badBrowser = isSafari || isIE;
+    document.getElementById('badBrowser').style.display = badBrowser ? 'block' : 'none';
+    if (badBrowser) {
+        return;
+    }
+    
 	document.getElementById('addTrigger').addEventListener('click', function(e) {
 		activeComponent = activeSkill;
 		showSkillPage('triggerChooser');

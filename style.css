@@ -31,6 +31,21 @@ html, body {
 	background-color: black;
 }
 
+#badBrowser {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+}
+
+#badBrowser p {
+    text-align: center;
+    margin-top: 40%;
+    font: 24px Sertig-Web;
+}
+
 #builder, #skillForm, #classForm, #componentChooser, #triggerChooser {
 	width: calc(100% - 200px);
 	height: 100%;
