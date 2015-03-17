@@ -43,6 +43,7 @@ var Condition = {
 	CHANCE:      { name: 'Chance',      container: true, construct: ConditionChance     },
     CLASS:       { name: 'Class',       container: true, construct: ConditionClass      },
 	CLASS_LEVEL: { name: 'Class Level', container: true, construct: ConditionClassLevel },
+    COMBAT:      { name: 'Combat',      container: true, construct: ConditionCombat     },
 	DIRECTION:   { name: 'Direction',   container: true, construct: ConditionDirection  },
 	ELEVATION:   { name: 'Elevation',   container: true, construct: ConditionElevation  },
 	FIRE:        { name: 'Fire',        container: true, construct: ConditionFire       },
@@ -623,6 +624,17 @@ function ConditionClassLevel()
 	
 	this.data.push(new IntValue('Min Level', 'min-level', 2));
 	this.data.push(new IntValue('Max Level', 'max-level', 99));
+}
+
+extend('ConditionCombat', 'Component');
+function ConditionCombat()
+{
+    this.super('Combat', Type.CONDITION, true);
+    
+    this.description = 'Applies child components to targets that are in/out of combat, depending on the settings.';
+    
+    this.data.push(new ListValue('In Combat', 'combat', [ 'True', 'False' ], 'True'));
+    this.data.push(new DoubleValue('Seconds', 'seconds', 10));
 }
 
 extend('ConditionDirection', 'Component');
