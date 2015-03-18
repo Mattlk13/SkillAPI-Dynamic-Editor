@@ -156,9 +156,10 @@ var skillsActive = true;
 // Set up event listeners when the page loads
 window.onload = function() 
 {
-    var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
-    var isIE = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
-    var badBrowser = isSafari || isIE;
+    var isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+    var isFirefox = typeof InstallTrigger !== 'undefined';   // Firefox 1.0+
+    var isChrome = !!window.chrome && !isOpera;              // Chrome 1+
+    var badBrowser = !isOpera && !isFirefox && !isChrome;
     document.getElementById('badBrowser').style.display = badBrowser ? 'block' : 'none';
     if (badBrowser) {
         return;
