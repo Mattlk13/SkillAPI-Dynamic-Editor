@@ -1,3 +1,16 @@
+var hoverSpace;
+
+function canDrop(thing, target) {
+    if (thing == target) return false;
+    
+    var temp = target;
+    while (temp.parentNode) {
+        temp = temp.parentNode;
+        if (temp == thing) return false;
+    }
+    return true;
+}
+
 /**
  * Types of components
  */
@@ -16,6 +29,7 @@ var Trigger = {
 	CROUCH               : { name: 'Crouch',               container: true, construct: TriggerCrouch             },
 	DEATH                : { name: 'Death',                container: true, construct: TriggerDeath              },
 	INITIALIZE           : { name: 'Initialize',           container: true, construct: TriggerInitialize         },
+    LAND                 : { name: 'Land',                 container: true, construct: TriggerLand               },
 	PHYSICAL_DAMAGE      : { name: 'Physical Damage',      container: true, construct: TriggerPhysicalDamage     },
 	SKILL_DAMAGE         : { name: 'Skill Damage',         container: true, construct: TriggerSkillDamage        },
 	TOOK_PHYSICAL_DAMAGE : { name: 'Took Physical Damage', container: true, construct: TriggerTookPhysicalDamage },
@@ -98,6 +112,7 @@ var Mechanic = {
 	PUSH:                { name: 'Push',                container: false, construct: MechanicPush               },
 	REPEAT:              { name: 'Repeat',              container: true,  construct: MechanicRepeat             },
 	SOUND:               { name: 'Sound',               container: false, construct: MechanicSound              },
+    SPEED:               { name: 'Speed',               container: false, construct: MechanicSpeed              },
 	STATUS:              { name: 'Status',              container: false, construct: MechanicStatus             },
 	WARP:                { name: 'Warp',                container: false, construct: MechanicWarp               },
 	WARP_LOC:            { name: 'Warp Location',       container: false, construct: MechanicWarpLoc            },
@@ -144,9 +159,23 @@ function Component(name, type, container, parent)
  */
 Component.prototype.createBuilderHTML = function(target)
 {
-	// Create the wrapping div with the appropriate class
+	// Create the wrapping divs with the appropriate classes
+    var container = document.createElement('div');
+    container.comp = this;
+    if (this.type == Type.TRIGGER) {
+        container.className = 'componentWrapper';
+    }
+    
 	var div = document.createElement('div');
 	div.className = 'component ' + this.type;
+    if (this.type != Type.TRIGGER) {
+        div.draggable = true;
+        div.ondrag = this.drag;
+    }
+    div.ondrop = this.drop;
+    if (this.container) {
+        div.ondragover = this.allowDrop;
+    }
 	
 	// Component label
 	var label = document.createElement('h3');
@@ -188,21 +217,88 @@ Component.prototype.createBuilderHTML = function(target)
 				break;
 			}
 		}
-		this.parentNode.parentNode.removeChild(this.parentNode);
+		this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);
 	});
 	div.appendChild(remove);
+    
+    container.appendChild(div);
 	
-	// Append the content
-	target.appendChild(div);
+    // Apply child components
+    var childContainer = document.createElement('div');
+    childContainer.className = 'componentChildren';
+    if (this.components.length > 0) {
+        for (var i = 0; i < this.components.length; i++) 
+        {
+            this.components[i].createBuilderHTML(childContainer);
+        }
+    }
+    container.appendChild(childContainer);
 	
-	// Apply child components
-	for (var i = 0; i < this.components.length; i++) 
-	{
-		this.components[i].createBuilderHTML(div);
-	}
-	
-	this.html = div;
+    // Append the content
+	target.appendChild(container);
+	   
+	this.html = childContainer;
 }
+
+Component.prototype.allowDrop = function(e) {
+    e.preventDefault();
+    if (hoverSpace) {
+        hoverSpace.style.marginBottom = '0px';
+        hoverSpace.onmouseout = undefined;
+    }
+    hoverSpace = e.target;
+    while (hoverSpace.className.indexOf('component') < 0) {
+        hoverSpace = hoverSpace.parentNode;
+    }
+    var thing = document.getElementById('dragComponent');
+    if (hoverSpace.id != 'dragComponent' && hoverSpace.parentNode.comp.container && canDrop(thing, hoverSpace)) {
+        hoverSpace.style.marginBottom = '30px';
+        hoverSpace.onmouseout = function() {
+            if (!hoverSpace) {
+                this.onmouseout = undefined;
+                return;
+            }
+            hoverSpace.style.marginBottom = '0px';
+            hoverSpace.onmouseout = undefined;
+            hoverSpace = undefined;
+        }
+    }
+    else hoverSpace = undefined;
+};
+
+Component.prototype.drag = function(e) {
+    var dragged = document.getElementById('dragComponent');
+    if (dragged) {
+        dragged.id = '';
+    }
+    e.target.id = 'dragComponent';
+};
+
+Component.prototype.drop = function(e) {
+    if (hoverSpace) {
+        hoverSpace.style.marginBottom = '0px';
+        hoverSpace = undefined;
+    }
+    
+    e.preventDefault();
+    var thing = document.getElementById('dragComponent').parentNode;
+    var target = e.target;
+    while (target.className.indexOf('component') < 0) {
+        target = target.parentNode;
+    }
+    if (target.id == 'dragComponent' || !target.parentNode.comp.container || !canDrop(thing, target)) {
+        return;
+    }
+    var targetComp = target.parentNode.comp;
+    var thingComp = thing.comp;
+    target = target.parentNode.childNodes[1];
+    thing.parentNode.removeChild(thing);
+    target.appendChild(thing);
+    
+    thingComp.parent.components.splice(thingComp.parent.components.indexOf(thingComp), 1);
+    thingComp.parent = targetComp;
+    thingComp.parent.components.push(thingComp);
+};
 
 /**
  * Creates the form HTML for editing the component data and
@@ -356,6 +452,14 @@ function TriggerInitialize()
 	this.super('Initialize', Type.TRIGGER, true);
 	
 	this.description = 'Applies skill effects immediately. This can be used for passive abilities.';
+}
+
+extend('TriggerLand', 'Component');
+function TriggerLand()
+{
+	this.super('Land', Type.TRIGGER, true);
+	
+	this.description = 'Applies skill effects when a player lands on the ground.';
 }
 
 extend('TriggerPhysicalDamage', 'Component');
@@ -823,7 +927,7 @@ function MechanicBlock()
     this.description = 'Changes blocks to the given type of block for a limited duration.';
     
     this.data.push(new ListValue('Shape', 'shape', [ 'Sphere', 'Cuboid' ], 'Sphere' ));
-    this.data.push(new ListValue('Solid Only', 'solid', [ 'True', 'False' ], 'True' ));
+    this.data.push(new ListValue('Type', 'type', [ 'Air', 'Any', 'Solid' ], 'Solid' ));
     this.data.push(new ListValue('Block', 'block', materialList, 'Ice'));
     this.data.push(new IntValue('Block Data', 'data', 0));
     this.data.push(new AttributeValue('Seconds', 'seconds', 5, 0));
@@ -1247,6 +1351,17 @@ function MechanicSound()
 	this.data.push(new ListValue('Sound', 'sound', [ 'Ambience Cave', 'Ambience Rain', 'Ambience Thunder', 'Anvil Break', 'Anvil Land', 'Anvil Use', 'Arrow Hit', 'Bat Death', 'Bat Hurt', 'Bat Idle', 'Bat Loop', 'Bat Takeof', 'Blaze Death', 'Blaze Hit', 'Breath', 'Burp', 'Cat Hiss', 'Cat Hit', 'Cat Meow', 'Cat Purr', 'Cat Purreow', 'Chest Close', 'Chest Open', 'Chicken Egg Pop', 'Chicken Hurt', 'Chicken Idle', 'Chicken Walk', 'Click', 'Cow Hurt', 'Cow Idle', 'Cow Walk', 'Creeper Death', 'Creeper Hiss', 'Dig Grass', 'Dig Gravel', 'Dig Sand', 'Dig Snow', 'Dig Stone', 'Dig Wood', 'Dig Wool', 'Donkey Angry', 'Donkey Death', 'Donkey Hit', 'Donkey Idle', 'Door Close', 'Door Open', 'Drink', 'Eat', 'Enderdragon Death', 'Enderdragon Growl', 'Enderdragon Hit', 'Enderdragon Wings', 'Enderman Death', 'Enderman Hit', 'Enderman Idle', 'Enderman Scream', 'Enderman Stare', 'Enderman Teleport', 'Explode', 'Fall Big', 'Fall Small', 'Fire', 'Fire Ignite', 'Firework Blast', 'Firework Blast 2', 'Firework Large Blast', 'Firework Large Blast 2', 'Firework Launch', 'Firework Twinkle', 'Firework Twinkle 2', 'Fizz', 'Fuse', 'Ghast Charge', 'Ghast Death', 'Ghast Fireball', 'Ghast Moan', 'Ghast Scream', 'Ghast Scream 2', 'Glass', 'Horse Angry', 'Horse Armor', 'Horse Breath', 'Horse Gallop', 'Horse Hit', 'Horse Idle', 'Horse Jump', 'Horse Land', 'Horse Saddle', 'Horse Skeleton Death', 'Horse Skeleton Idle', 'Horse Soft', 'Horse Wood', 'Horse Zombie Death', 'Horse Zombie Hit', 'Horse Zombie Idle', 'Hurt', 'Hurt Flesh', 'Iron Golem Death', 'Iron Golem Hit', 'Iron Golem Throw', 'Iron Golem Walk', 'Item Break', 'Item Pickup', 'Lava', 'Lava Pop', 'Level Up', 'Magmacube Jump', 'Magmacube Walk', 'Magmacube Walk 2', 'Minecart Base', 'Minecart Inside', 'Note Bass', 'Note Bass Guitar', 'Note Piano', 'Note Pling', 'Note Snare Drum', 'Note Sticks', 'Orb Pickup', 'Pig Death', 'Pig Idle', 'Pig Walk', 'Piston Extended', 'Piston Retract', 'Portal', 'Portal Travel', 'Portal Trigger', 'Sheep Idle', 'Sheep Shear', 'Sheep Walk', 'Shoot Arrow', 'Silverfish Hit', 'Silverfish Idle', 'Silverfish Kill', 'Silverfish Walk', 'Skeleton Death', 'Skeleton Hurt', 'Skeleton Idle', 'Skeleton Walk', 'Slime Attack', 'Slime Walk', 'Slime Walk 2', 'Spider Death', 'Spider Idle', 'Spider Walk', 'Splash', 'Splash 2', 'Step Grass', 'Step Gravel', 'Step Ladder', 'Step Sand', 'Step Snow', 'Step Stone', 'Step Wood', 'Step Wool', 'Successful Hit', 'Swim', 'Villager Death', 'Villager Haggle', 'Villager Hit', 'Villager Idle', 'Villager No', 'Villager Yes', 'Water', 'Wither Death', 'Wither Hurt', 'Wither Idle', 'Wither Shoot', 'Wither Spawn', 'Wolf Bark', 'Wolf DEath', 'Wolf Growl', 'Wolf Howl', 'Wolf Hurt', 'Wolf Pant', 'Wolf Shake', 'Wolf Walk', 'Wolf Whine', 'Wood Click', 'Zombie Death', 'Zombie Hurt', 'Zombie Idle', 'Zombie Infect', 'Zombie Metal', 'Zombie Pig Angry', 'Zombie Pig Death', 'Zombie Pig Hurt', 'Zombie Pig Idle', 'Zombie Pig Remedy', 'Zombie Pig Unfect', 'Zombie Remedy', 'Zombie Unfect', 'Zombie Wood', 'Zombie Wood Break' ], 'Ambience Cave'));
 	this.data.push(new AttributeValue('Volume', 'volume', 100, 0));
 	this.data.push(new AttributeValue('Pitch', 'pitch', 0, 0));
+}
+
+extend('MechanicSpeed', 'Component');
+function MechanicSpeed()
+{
+	this.super('Speed', Type.MECHANIC, false);
+	
+	this.description = 'Modifies the base speed of a player using a multiplier (stacks with potions)';
+	
+	this.data.push(new AttributeValue('Multiplier', 'multiplier', 1.2, 0));
+	this.data.push(new AttributeValue('Duration', 'duration', 3, 1));
 }
 
 extend('MechanicStatus', 'Component');

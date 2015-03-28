@@ -33,6 +33,11 @@ h3:hover {
 	color: #f0f;
 }
 
+.componentWrapper {
+    float: left;
+	max-width: calc(100% - 24px);
+}
+
 .component {
 	padding: 5px;
 	margin: 5px;
@@ -40,9 +45,12 @@ h3:hover {
 	border-radius: 10px;
 	font: 18px Sertig-Web;
 	background-color: #111;
-	float: left;
-	width: 300px;
-	max-width: calc(100% - 24px);
+    width: 225px;
+    height: 75px;
+}
+
+.componentChildren {
+    margin-left: 20px;
 }
 
 .builderButton {
