@@ -21,7 +21,7 @@ function Skill(name)
 		new StringValue('Type', 'type', 'Dynamic'),
 		new IntValue('Max Level', 'max-level', 5),
 		new ListValue('Skill Req', 'skill-req', ['None'], 'None'),
-		new IntValue('Skill Req Level', 'skill-req-level', 1),
+		new IntValue('Skill Req Level', 'skill-req-lvl', 1),
 		new ListValue('Permission', 'needs-permission', ['True', 'False'], 'False'),
 		new AttributeValue('Level Req', 'level', 1, 0),
 		new AttributeValue('Cost', 'cost', 1, 0),
