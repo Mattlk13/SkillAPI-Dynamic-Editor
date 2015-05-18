@@ -114,7 +114,10 @@ IndexListValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
-	if (this.tooltip) this.label.title = this.tooltip;
+    if (this.tooltip) {
+        this.label.setAttribute('data-tooltip', this.tooltip);
+        this.label.className = 'tooltip';
+    }
 	target.appendChild(this.label);
 	
 	this.select = document.createElement('select');
@@ -223,7 +226,10 @@ ListValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
-	if (this.tooltip) this.label.title = this.tooltip;
+	if (this.tooltip) {
+        this.label.setAttribute('data-tooltip', this.tooltip);
+        this.label.className = 'tooltip';
+    } 
 	target.appendChild(this.label);
 	
 	this.select = document.createElement('select');
@@ -348,7 +354,10 @@ AttributeValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
-	if (this.tooltip) this.label.title = this.tooltip;
+    if (this.tooltip) {
+        this.label.setAttribute('data-tooltip', this.tooltip);
+        this.label.className = 'tooltip';
+    }
 	target.appendChild(this.label);
 	
 	this.baseBox = document.createElement('input');
@@ -485,7 +494,10 @@ DoubleValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
-	if (this.tooltip) this.label.title = this.tooltip;
+    if (this.tooltip) {
+        this.label.setAttribute('data-tooltip', this.tooltip);
+        this.label.className = 'tooltip';
+    }
 	target.appendChild(this.label);
 	
 	this.box = document.createElement('input');
@@ -587,7 +599,10 @@ IntValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
-	if (this.tooltip) this.label.title = this.tooltip;
+    if (this.tooltip) {
+        this.label.setAttribute('data-tooltip', this.tooltip);
+        this.label.className = 'tooltip';
+    }
 	target.appendChild(this.label);
 	
 	this.box = document.createElement('input');
@@ -689,7 +704,10 @@ StringValue.prototype.createHTML = function(target)
 {
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
-	if (this.tooltip) this.label.title = this.tooltip;
+    if (this.tooltip) {
+        this.label.setAttribute('data-tooltip', this.tooltip);
+        this.label.className = 'tooltip';
+    }
 	target.appendChild(this.label);
 	
 	this.box = document.createElement('input');
@@ -797,7 +815,10 @@ StringListValue.prototype.createHTML = function(target)
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
 	this.label.className = 'areaLabel';
-	if (this.tooltip) this.label.title = this.tooltip;
+    if (this.tooltip) {
+        this.label.setAttribute('data-tooltip', this.tooltip);
+        this.label.className = 'tooltip';
+    }
 	target.appendChild(this.label);
 	
 	var content = '';
@@ -919,7 +940,10 @@ ByteListValue.prototype.createHTML = function(target)
 	this.label = document.createElement('label');
 	this.label.innerHTML = this.name;
 	this.label.className = 'areaLabel';
-	if (this.tooltip) this.label.title = this.tooltip;
+    if (this.tooltip) {
+        this.label.setAttribute('data-tooltip', this.tooltip);
+        this.label.className = 'tooltip';
+    }
 	target.appendChild(this.label);
 	
     // Add div elements

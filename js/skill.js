@@ -17,19 +17,19 @@ function Skill(name)
 	
 	// Skill data
 	this.data = [
-		new StringValue('Name', 'name', name),
-		new StringValue('Type', 'type', 'Dynamic'),
-		new IntValue('Max Level', 'max-level', 5),
-		new ListValue('Skill Req', 'skill-req', ['None'], 'None'),
-		new IntValue('Skill Req Level', 'skill-req-lvl', 1),
-		new ListValue('Permission', 'needs-permission', ['True', 'False'], 'False'),
-		new AttributeValue('Level Req', 'level', 1, 0),
-		new AttributeValue('Cost', 'cost', 1, 0),
-		new AttributeValue('Cooldown', 'cooldown', 0, 0),
-		new AttributeValue('Mana', 'mana', 0, 0),
-		new StringValue('Cast Message', 'msg', '&6{player} &2has cast &6{skill}'),
-		new ListValue('Icon', 'icon', materialList, 'Jack O Lantern'),
-		new IntValue('Icon Data', 'icon-data', 0),
+		new StringValue('Name', 'name', name).setTooltip('The name of the skill. This should not contain color codes'),
+		new StringValue('Type', 'type', 'Dynamic').setTooltip('The flavor text describing the skill such as "AOE utility" or whatever you want it to be'),
+		new IntValue('Max Level', 'max-level', 5).setTooltip('The maximum level the skill can reach'),
+		new ListValue('Skill Req', 'skill-req', ['None'], 'None').setTooltip('The skill that needs to be upgraded before this one can be unlocked'),
+		new IntValue('Skill Req Level', 'skill-req-lvl', 1).setTooltip('The level that the required skill needs to reach before this one can be unlocked'),
+		new ListValue('Permission', 'needs-permission', ['True', 'False'], 'False').setTooltip('Whether or not this skill requires a permission to unlock. The permission would be "skillapi.skill.{skillName}"'),
+		new AttributeValue('Level Req', 'level', 1, 0).setTooltip('The class level the player needs to be before unlocking or upgrading this skill'),
+		new AttributeValue('Cost', 'cost', 1, 0).setTooltip('The amount of skill points needed to unlock and upgrade this skill'),
+		new AttributeValue('Cooldown', 'cooldown', 0, 0).setTooltip('The time in seconds before the skill can be cast again (only works with the Cast trigger)'),
+		new AttributeValue('Mana', 'mana', 0, 0).setTooltip('The amount of mana it takes to cast the skill (only works with the Cast trigger)'),
+		new StringValue('Cast Message', 'msg', '&6{player} &2has cast &6{skill}').setTooltip('The message to display to players around the caster when the skill is cast. The radius of the area is in the config.yml options'),
+		new ListValue('Icon', 'icon', materialList, 'Jack O Lantern').setTooltip('The item used to represent the skill in skill trees'),
+		new IntValue('Icon Data', 'icon-data', 0).setTooltip('The data/durability value of the item used to represent the skill in skill trees'),
 		new StringListValue('Icon Lore', 'icon-lore', [
 			'&d{name} &7({level}/{max})',
 			'&2Type: &6{type}',
@@ -39,7 +39,7 @@ function Skill(name)
 			'',
 			'&2Mana: {attr:mana}',
 			'&2Cooldown: {attr:cooldown}'
-		])
+		]).setTooltip('The description shown for the item in skill trees. Include values of mechanics such as damage dealt using their "Icon Key" values')
 	];
 }
 

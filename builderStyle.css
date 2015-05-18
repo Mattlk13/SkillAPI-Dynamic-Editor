@@ -46,7 +46,7 @@ h3:hover {
 	font: 18px Sertig-Web;
 	background-color: #111;
     width: 225px;
-    height: 75px;
+    height: 90px;
 }
 
 .componentChildren {
@@ -56,7 +56,7 @@ h3:hover {
 .builderButton {
 	float: left;
 	background-color: #222;
-	width: 80px;
+	width: 90px;
 	font: 16px Sertig-Web;
 	border-radius: 8px;
 	padding: 5px;

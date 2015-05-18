@@ -12,25 +12,24 @@ function Class(name)
 	
 	// Class data
 	this.data = [
-		new StringValue('Name', 'name', name),
-		new StringValue('Prefix', 'prefix', name),
-		new StringValue('Group', 'group', 'class'),
-		new StringValue('Mana Name', 'mana', '&2Mana'),
-		new IntValue('Max Level', 'max-level', 40),
-		new ListValue('Parent', 'parent', ['None'], 'None'),
-		new ListValue('Permission', 'needs-permission', ['True', 'False'], 'False'),
-        new ByteListValue('Exp Sources', 'exp-source', [ 'Mob', 'Block Break', 'Block Place', 'Craft', 'Command', 'Special', 'Exp Bottle', 'Smelt', 'Quest' ], 273),
-		new AttributeValue('Health', 'health', 20, 0),
-		new AttributeValue('Mana', 'mana', 20, 0),
-		new DoubleValue('Mana Regen', 'mana-regen', 1, 0),
+		new StringValue('Name', 'name', name).setTooltip('The name of the class. This should not contain color codes'),
+		new StringValue('Prefix', 'prefix', '&6' + name).setTooltip('The prefix given to players who profess as the class which can contain color codes'),
+		new StringValue('Group', 'group', 'class').setTooltip('A class group are things such as "race", "class", and "trade". Different groups can be professed through at the same time, one class from each group'),
+		new StringValue('Mana Name', 'mana', '&2Mana').setTooltip('The name the class uses for mana'),
+		new IntValue('Max Level', 'max-level', 40).setTooltip('The maximum level the class can reach. If this class turns into other classes, this will also be the level it can profess into those classes.'),
+		new ListValue('Parent', 'parent', ['None'], 'None').setTooltip('The class that turns into this one. For example, if Fighter turns into Knight, then Knight would have its parent as Fighter'),
+		new ListValue('Permission', 'needs-permission', ['True', 'False'], 'False').setTooltip('Whether or not the class requires a permission to be professed as. The permission would be "skillapi.class.{className}"'),
+        new ByteListValue('Exp Sources', 'exp-source', [ 'Mob', 'Block Break', 'Block Place', 'Craft', 'Command', 'Special', 'Exp Bottle', 'Smelt', 'Quest' ], 273).setTooltip('The experience sources the class goes up from. Most of these only work if "use-exp-orbs" is enabled in the config.yml.'),
+		new AttributeValue('Health', 'health', 20, 0).setTooltip('The amount of health the class has'),
+		new AttributeValue('Mana', 'mana', 20, 0).setTooltip('The amount of mana the class has'),
+		new DoubleValue('Mana Regen', 'mana-regen', 1, 0).setTooltip('The amount of mana the class regens each interval. The interval is in the config.yml and by default is once every second. If you want to regen a decimal amount per second, increase the interval.'),
 		new ListValue('Skill Tree', 'tree', [ 'Basic Horizontal', 'Basic Vertical', 'Level Horizontal', 'Level Vertical', 'Requirement' ], 'Requirement'),
-		new IndexListValue('Combo', 'combo', [ 'Not All Left', 'Start Left', 'Start Right', 'Start Shift', 'All' ], 0),
-		new StringListValue('Skills (one per line)', 'skills', []),
-		new ListValue('Icon', 'icon', materialList, 'Jack O Lantern'),
-		new IntValue('Icon Data', 'icon-data', 0),
+		new StringListValue('Skills (one per line)', 'skills', []).setTooltip('The skills the class is able to use'),
+		new ListValue('Icon', 'icon', materialList, 'Jack O Lantern').setTooltip('The item that represents the class in GUIs'),
+		new IntValue('Icon Data', 'icon-data', 0).setTooltip('The data/durability value of the item that represents the class in GUIs'),
 		new StringListValue('Icon Lore', 'icon-lore', [
 			'&d' + name
-		])
+		]).setTooltip('The text shown on the item for the class in GUIs')
 	];
 }
 

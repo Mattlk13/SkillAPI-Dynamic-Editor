@@ -63,6 +63,7 @@ var Condition = {
 	FIRE:        { name: 'Fire',        container: true, construct: ConditionFire       },
 	FLAG:        { name: 'Flag',        container: true, construct: ConditionFlag       },
 	HEALTH:      { name: 'Health',      container: true, construct: ConditionHealth     },
+    INVENTORY:   { name: 'Inventory',   container: true, construct: ConditionInventory  },
 	ITEM:        { name: 'Item',        container: true, construct: ConditionItem       },
 	LIGHT:       { name: 'Light',       container: true, construct: ConditionLight      },
 	LORE:        { name: 'Lore',        container: true, construct: ConditionLore       },
@@ -97,6 +98,7 @@ var Mechanic = {
 	IMMUNITY:            { name: 'Immunity',            container: false, construct: MechanicImmunity           },
 	ITEM:                { name: 'Item',                container: false, construct: MechanicItem               },
 	ITEM_PROJECTILE:     { name: 'Item Projectile',     container: true,  construct: MechanicItemProjectile     },
+    ITEM_REMOVE:         { name: 'Item Remove',         container: false, construct: MechanicItemRemove         },
 	LAUNCH:              { name: 'Launch',              container: false, construct: MechanicLaunch             },
 	LIGHTNING:           { name: 'Lightning',           container: false, construct: MechanicLightning          },
 	MANA:                { name: 'Mana',                container: false, construct: MechanicMana               },
@@ -142,9 +144,11 @@ function Component(name, type, container, parent)
 	this.parent = parent;
 	this.html = undefined;
 	this.components = [];
-	this.data = [new StringValue('Icon Key', 'icon-key', '')];
+	this.data = [new StringValue('Icon Key', 'icon-key', '').setTooltip('The key used by the component in the Icon Lore. If this is set to "example" and has a value name of "value", it can be referenced using the string "{attr:example.value}".')];
     if (this.type == Type.MECHANIC) {
-        this.data.push(new ListValue('Counts as Cast', 'counts', [ 'True', 'False' ], 'True'));
+        this.data.push(new ListValue('Counts as Cast', 'counts', [ 'True', 'False' ], 'True')
+            .setTooltip('Whether or not this mechanic running treats the skill as "casted" and will consume mana and start the cooldown. Set to false if it is a mechanic appled when the skill fails such as cleanup or an error message.')
+        );
     }
 	
 	this.dataKey = 'data';
@@ -326,7 +330,14 @@ Component.prototype.createFormHTML = function()
 		var h = document.createElement('hr');
 		form.appendChild(h);
 		
-		for (var i = 0; i < this.data.length; i++)
+        var i = 1;
+        for (var j = 1; j < this.data.length; j++) {
+            if (this.data[j] instanceof AttributeValue) {
+                i = 0;
+                break;
+            }
+        }
+		for (; i < this.data.length; i++)
 		{
 			this.data[i].hidden = false;
 			this.data[i].createHTML(form);
@@ -550,7 +561,7 @@ function TargetArea()
 	this.description = 'Targets all units in a radius from the current target (the casting player is the default target).';
 	
 	this.data.push(new AttributeValue("Radius", "radius", 3, 0)
-		.setTooltip('The radius of the area to target')
+		.setTooltip('The radius of the area to target in blocks')
 	);
 	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
 		.setTooltip('The alignment of targets to get')
@@ -574,10 +585,10 @@ function TargetCone()
 	this.description = 'Targets all units in a line in front of the current target (the casting player is the default target). If you include the caster, that counts towards the max amount.';
 	
 	this.data.push(new AttributeValue("Range", "range", 5, 0)
-		.setTooltip('The max distance any target can be')
+		.setTooltip('The max distance away any target can be in blocks')
 	);
 	this.data.push(new AttributeValue("Angle", "angle", 90, 0)
-		.setTooltip('The angle of the cone arc')
+		.setTooltip('The angle of the cone arc in degrees')
 	);
 	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
 		.setTooltip('The alignment of targets to get')
@@ -601,10 +612,10 @@ function TargetLinear()
 	this.description = 'Targets all units in a line in front of the current target (the casting player is the default target).';
 	
 	this.data.push(new AttributeValue("Range", "range", 5, 0)
-		.setTooltip('The max distance any target can be')
+		.setTooltip('The max distance away any target can be in blocks')
 	);
 	this.data.push(new DoubleValue("Tolerance", "tolerance", 4)
-		.setTooltip('How lenient the targeting is. Larger numbers allow easier targeting')
+		.setTooltip('How lenient the targeting is. Larger numbers allow easier targeting. It is essentially how wide a cone is which is where you are targeting.')
 	);
 	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
 		.setTooltip('The alignment of targets to get')
@@ -640,7 +651,7 @@ function TargetNearest()
 	this.description = 'Targets the closest unit(s) in a radius from the current target (the casting player is the default target). If you include the caster, that counts towards the max number.';
 	
 	this.data.push(new AttributeValue("Radius", "radius", 3, 0)
-		.setTooltip('The radius of the area to target')
+		.setTooltip('The radius of the area to target in blocks')
 	);
 	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
 		.setTooltip('The alignment of targets to get')
@@ -672,10 +683,10 @@ function TargetSingle()
 	this.description = 'Targets a single unit in front of the current target (the casting player is the default target).';
 	
 	this.data.push(new AttributeValue("Range", "range", 5, 0)
-		.setTooltip('The max distance any target can be')
+		.setTooltip('The max distance away any target can be in blocks')
 	);
 	this.data.push(new DoubleValue("Tolerance", "tolerance", 4)
-		.setTooltip('How lenient the targeting is. Larger numbers allow easier targeting')
+		.setTooltip('How lenient the targeting is. Larger numbers allow easier targeting. It is essentially how wide a cone is which is where you are targeting.')
 	);
 	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
 		.setTooltip('The alignment of targets to get')
@@ -694,8 +705,12 @@ function ConditionBiome()
 	
 	this.description = 'Applies child components when in a specified biome.';
 	
-	this.data.push(new ListValue('Type', 'type', [ 'In Biome', 'Not In Biome' ], 'In Biome'));
-	this.data.push(new ListValue('Biome', 'biome', [ 'Beach', 'Desert', 'Desert Hills', 'Extreme Hills', 'Forest', 'Frozen Ocean', 'Frozen River', 'Hell', 'Ice Mountains', 'Ice Plains', 'Jungle', 'Jungle Hills', 'Mushroom Island', 'Mushroom Shore', 'Ocean', 'Plains', 'River', 'Sky', 'Small Mountains', 'Swampland', 'Taiga', 'Taiga Hills' ], 'Beach'));
+	this.data.push(new ListValue('Type', 'type', [ 'In Biome', 'Not In Biome' ], 'In Biome')
+        .setTooltip('Whether or not the target should be in the biome')
+    );
+	this.data.push(new ListValue('Biome', 'biome', [ 'Beach', 'Desert', 'Desert Hills', 'Extreme Hills', 'Forest', 'Frozen Ocean', 'Frozen River', 'Hell', 'Ice Mountains', 'Ice Plains', 'Jungle', 'Jungle Hills', 'Mushroom Island', 'Mushroom Shore', 'Ocean', 'Plains', 'River', 'Sky', 'Small Mountains', 'Swampland', 'Taiga', 'Taiga Hills' ], 'Beach')
+        .setTooltip('The biome to check for. For one of many biomes, make multiple biome conditions with the same children.')
+    );
 }
 
 extend('ConditionChance', 'Component');
@@ -705,7 +720,9 @@ function ConditionChance()
 	
 	this.description = 'Rolls a chance to apply child components.';
 	
-	this.data.push(new AttributeValue('Chance', 'chance', 25, 0));
+	this.data.push(new AttributeValue('Chance', 'chance', 25, 0)
+        .setTooltip('The chance to execute children as a percentage. "25" would be 25%.')
+    );
 }
 
 extend('ConditionClass', 'Component');
@@ -715,8 +732,12 @@ function ConditionClass()
     
     this.description = 'Applies child components when the target is the given class or optionally a profession of that class. For example, if you check for "Fighter" which professes into "Warrior", a "Warrior" will pass the check if you do not enable "exact".';
     
-    this.data.push(new StringValue('Class', 'class', 'Fighter'));
-    this.data.push(new ListValue('Exact', 'exact', [ 'True', 'False' ], 'False'))
+    this.data.push(new StringValue('Class', 'class', 'Fighter')
+        .setTooltip('The class the player should be')
+    );
+    this.data.push(new ListValue('Exact', 'exact', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not the player must be exactly the given class. If false, they can be a later profession of the class.')
+    );
 }
 
 extend('ConditionClassLevel', 'Component');
@@ -726,8 +747,12 @@ function ConditionClassLevel()
 	
 	this.description = 'Applies child components when the level of the class with this skill is within the range. This only checks the level of the caster, not the targets.';
 	
-	this.data.push(new IntValue('Min Level', 'min-level', 2));
-	this.data.push(new IntValue('Max Level', 'max-level', 99));
+	this.data.push(new IntValue('Min Level', 'min-level', 2)
+        .setTooltip('The minimum class level the player should be. If the player has multiple classes, this will be of their main class')
+    );
+	this.data.push(new IntValue('Max Level', 'max-level', 99)
+        .setTooltip('The maximum class level the player should be. If the player has multiple classes, this will be of their main class')
+    );
 }
 
 extend('ConditionCombat', 'Component');
@@ -737,8 +762,12 @@ function ConditionCombat()
     
     this.description = 'Applies child components to targets that are in/out of combat, depending on the settings.';
     
-    this.data.push(new ListValue('In Combat', 'combat', [ 'True', 'False' ], 'True'));
-    this.data.push(new DoubleValue('Seconds', 'seconds', 10));
+    this.data.push(new ListValue('In Combat', 'combat', [ 'True', 'False' ], 'True')
+        .setTooltip('Whether or not the target should be in or out of combat')
+    );
+    this.data.push(new DoubleValue('Seconds', 'seconds', 10)
+        .setTooltip('The time in seconds since the last combat activity before something is considered not in combat')
+    );
 }
 
 extend('ConditionDirection', 'Component');
@@ -748,8 +777,12 @@ function ConditionDirection()
 	
 	this.description = 'Applies child components when the target or caster is facing the correct direction relative to the other.';
 	
-	this.data.push(new ListValue('Type', 'type', [ 'Target', 'Caster' ], 'Target'));
-	this.data.push(new ListValue('Direction', 'direction', [ 'Away', 'Towards' ], 'Away'));
+	this.data.push(new ListValue('Type', 'type', [ 'Target', 'Caster' ], 'Target')
+        .setTooltip('The entity to check the direction of')
+    );
+	this.data.push(new ListValue('Direction', 'direction', [ 'Away', 'Towards' ], 'Away')
+        .setTooltip('The direction the chosen entity needs to be looking relative to the other.')
+    );
 }
 
 extend('ConditionElevation', 'Component');
@@ -759,9 +792,15 @@ function ConditionElevation()
 	
 	this.description = 'Applies child components when the elevation of the target matches the settings.';
 	
-	this.data.push(new ListValue('Type', 'type', [ 'Normal', 'Difference' ], 'Normal'));
-	this.data.push(new AttributeValue('Min Value', 'min-value', 0, 0));
-	this.data.push(new AttributeValue('Max Value', 'max-value', 255, 0));
+	this.data.push(new ListValue('Type', 'type', [ 'Normal', 'Difference' ], 'Normal')
+        .setTooltip('The type of comparison to make. Normal is just their Y-coordinate. Difference would be the difference between that the caster\'s Y-coordinate')
+    );
+	this.data.push(new AttributeValue('Min Value', 'min-value', 0, 0)
+        .setTooltip('The minimum value for the elevation required. A positive minimum value with a "Difference" type would be for when the target is higher up than the caster')
+    );
+	this.data.push(new AttributeValue('Max Value', 'max-value', 255, 0)
+        .setTooltip('The maximum value for the elevation required. A negative maximum value with a "Difference" type would be for when the target is below the caster')
+    );
 }
 
 extend('ConditionFire', 'Component');
@@ -771,7 +810,9 @@ function ConditionFire()
 	
 	this.description = 'Applies child components when the target is on fire.';
 	
-	this.data.push(new ListValue('Type', 'type', [ 'On Fire', 'Not On Fire' ], 'On Fire'));
+	this.data.push(new ListValue('Type', 'type', [ 'On Fire', 'Not On Fire' ], 'On Fire')
+        .setTooltip('Whether or not the target should be on fire')
+    );
 }
 
 extend('ConditionFlag', 'Component');
@@ -781,8 +822,12 @@ function ConditionFlag()
 	
 	this.description = 'Applies child components when the target is marked by the appropriate flag.';
 	
-	this.data.push(new ListValue('Type', 'type', [ 'Set', 'Not Set' ], 'Set'));
-	this.data.push(new StringValue('Key', 'key', 'key'));
+	this.data.push(new ListValue('Type', 'type', [ 'Set', 'Not Set' ], 'Set')
+        .setTooltip('Whether or not the flag should be set')
+    );
+	this.data.push(new StringValue('Key', 'key', 'key')
+        .setTooltip('The unique key representing the flag. This should match the key for when you set it using the Flag mechanic or the Flat Toggle mechanic')
+    );
 }
 
 extend('ConditionHealth', 'Component');
@@ -792,9 +837,15 @@ function ConditionHealth()
 
 	this.description = "Applies child components when the target's health matches the settings.";
 	
-	this.data.push(new ListValue('Type', 'type', [ 'Health', 'Percent', 'Difference', 'Difference Percent' ], 'Health'));
-	this.data.push(new AttributeValue('Min Value', 'min-value', 0, 0));
-	this.data.push(new AttributeValue('Max Value', 'max-value', 10, 2));
+	this.data.push(new ListValue('Type', 'type', [ 'Health', 'Percent', 'Difference', 'Difference Percent' ], 'Health')
+        .setTooltip('The type of measurement to use for the health. Health is their flat health left. Percent is the percentage of health they have left. Difference is the difference between the target\'s flat health and the caster\'s. Difference percent is the difference between the target\'s percentage health left and the caster\s')
+    );
+	this.data.push(new AttributeValue('Min Value', 'min-value', 0, 0)
+        .setTooltip('The minimum health required. A positive minimum with one of the "Difference" types would be for when the target has more health')
+    );
+	this.data.push(new AttributeValue('Max Value', 'max-value', 10, 2)
+        .setTooltip('The maximum health required. A negative maximum with one of the "Difference" types would be for when the target has less health')
+    );
 }
 
 extend('ConditionItem', 'Component');
@@ -803,7 +854,27 @@ function ConditionItem()
 	this.super('Item', Type.CONDITION, true);
 	this.description = "Applies child components when the target is wielding an item matching the given material.";
 	
-	this.data.push(new ListValue('Item', 'material', materialList, 'Stick'));
+	this.data.push(new ListValue('Item', 'material', materialList, 'Stick')
+        .setTooltip('The material of the item that the target needs to be wielding')
+    );
+}
+
+extend('ConditionInventory', 'Component');
+function ConditionInventory()
+{
+    this.super('Inventory', Type.CONDITION, true);
+    
+    this.description = 'Applies child components when the target player contains the given item in their inventory. This does not work on mobs.';
+    
+    this.data.push(new ListValue('Material', 'material', materialList, 'Jack O Lantern')
+        .setTooltip('The material of the item that needs to be in the player\'s inventory')
+    );
+    this.data.push(new IntValue('Data', 'data', 0)
+        .setTooltip('The data/durability value of the item that needs to be in the player\'s inventory')
+    );
+    this.data.push(new AttributeValue('Amount', 'amount', 1, 0)
+        .setTooltip('The amount of the item needed in the player\'s inventory')
+    );
 }
 
 extend('ConditionLight', 'Component');
@@ -813,8 +884,12 @@ function ConditionLight()
 	
 	this.description = "Applies child components when the light level at the target's location matches the settings.";
 	
-	this.data.push(new AttributeValue('Min Light', 'min-light', 0, 0));
-	this.data.push(new AttributeValue('Max Light', 'max-light', 16, 16));
+	this.data.push(new AttributeValue('Min Light', 'min-light', 0, 0)
+        .setTooltip('The minimum light level needed. 16 is full brightness while 0 is complete darkness')
+    );
+	this.data.push(new AttributeValue('Max Light', 'max-light', 16, 16)
+        .setTooltip('The maximum light level needed. 16 is full brightness while 0 is complete darkness')
+    );
 }
 
 extend('ConditionLore', 'Component');
@@ -824,8 +899,12 @@ function ConditionLore()
 	
 	this.description = 'Applies child components when the held item of the caster contains a line with the given string';
 	
-	this.data.push(new ListValue('Regex', 'regex', [ 'True', 'False' ], 'False'));
-	this.data.push(new StringValue('String', 'str', 'text'));
+	this.data.push(new ListValue('Regex', 'regex', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not the text to look for is formatted as regex. If you do not know what regex is, ignore this')
+    );
+	this.data.push(new StringValue('String', 'str', 'text')
+        .setTooltip('The text to look for on the held item\'s lore')
+    );
 }
 
 extend('ConditionMana', 'Component');
@@ -835,9 +914,15 @@ function ConditionMana()
 
 	this.description = "Applies child components when the target's mana matches the settings.";
 	
-	this.data.push(new ListValue('Type', 'type', [ 'Mana', 'Percent', 'Difference', 'Difference Percent' ], 'Health'));
-	this.data.push(new AttributeValue('Min Value', 'min-value', 0, 0));
-	this.data.push(new AttributeValue('Max Value', 'max-value', 10, 2));
+	this.data.push(new ListValue('Type', 'type', [ 'Mana', 'Percent', 'Difference', 'Difference Percent' ], 'Mana')
+        .setTooltip('The type of measurement to use for the mana. Mana is their flat mana left. Percent is the percentage of mana they have left. Difference is the difference between the target\'s flat mana and the caster\'s. Difference percent is the difference between the target\'s percentage mana left and the caster\s')
+    );
+	this.data.push(new AttributeValue('Min Value', 'min-value', 0, 0)
+        .setTooltip('The minimum amount of mana needed')
+    );
+	this.data.push(new AttributeValue('Max Value', 'max-value', 10, 2)
+        .setTooltip('The maximum amount of mana needed')
+    );
 }
 
 extend('ConditionName', 'Component');
@@ -847,9 +932,15 @@ function ConditionName()
 	
 	this.description = 'Applies child components when the target has a name matching the settings.';
 	
-	this.data.push(new ListValue('Contains Text', 'contains', [ 'True', 'False' ], 'True'));
-	this.data.push(new ListValue('Regex', 'regex', [ 'True', 'False' ], 'False'));
-	this.data.push(new StringValue('Text', 'text', 'text'));
+	this.data.push(new ListValue('Contains Text', 'contains', [ 'True', 'False' ], 'True')
+        .setTooltip('Whether or not the target should have a name containing the text')
+    );
+	this.data.push(new ListValue('Regex', 'regex', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not the text is formatted as regex. If you do not know what regex is, ignore this option')
+    );
+	this.data.push(new StringValue('Text', 'text', 'text')
+        .setTooltip('The text to look for in the target\'s name')
+    );
 }
 
 extend('ConditionPotion', 'Component');
@@ -859,8 +950,12 @@ function ConditionPotion()
 	
 	this.description = 'Applies child components when the target has the potion effect.';
 	
-	this.data.push(new ListValue('Type', 'type', [ 'Active', 'Not Active' ], 'Active'));
-	this.data.push(new ListValue('Potion', 'potion', [ 'Any', 'Absorption', 'Blindness', 'Confusion', 'Damage Resistance', 'Fast Digging', 'Fire Resistance', 'Health Boost', 'Hunger', 'Increase Damage', 'Invisibility', 'Jump', 'Night Vision', 'Poison', 'Regeneration', 'Saturation', 'Slow', 'Slow Digging', 'Speed', 'Water Breathing', 'Weakness', 'Wither' ], 'Any'));
+	this.data.push(new ListValue('Type', 'type', [ 'Active', 'Not Active' ], 'Active')
+        .setTooltip('Whether or not the potion should be active')
+    );
+	this.data.push(new ListValue('Potion', 'potion', [ 'Any', 'Absorption', 'Blindness', 'Confusion', 'Damage Resistance', 'Fast Digging', 'Fire Resistance', 'Health Boost', 'Hunger', 'Increase Damage', 'Invisibility', 'Jump', 'Night Vision', 'Poison', 'Regeneration', 'Saturation', 'Slow', 'Slow Digging', 'Speed', 'Water Breathing', 'Weakness', 'Wither' ], 'Any')
+        .setTooltip('The type of potion to look for')
+    );
 }
 
 extend('ConditionSkillLevel', 'Component');
@@ -870,9 +965,15 @@ function ConditionSkillLevel(skill)
 	
 	this.description = 'Applies child components when the skill level is with the range. This checks the skill level of the caster, not the targets.';
 	
-	this.data.push(new StringValue('Skill', 'skill', skill));
-	this.data.push(new IntValue('Min Level', 'min-level', 2));
-	this.data.push(new IntValue('Max Level', 'max-level', 99));
+	this.data.push(new StringValue('Skill', 'skill', skill)
+        .setTooltip('The name of the skill to check the level of. If you want to check the current skill, enter the current skill\'s name anyway')
+    );
+	this.data.push(new IntValue('Min Level', 'min-level', 2)
+        .setTooltip('The minimum level of the skill needed')
+    );
+	this.data.push(new IntValue('Max Level', 'max-level', 99)
+        .setTooltip('The maximum level of the skill needed')
+    );
 }
 
 extend('ConditionStatus', 'Component');
@@ -882,8 +983,12 @@ function ConditionStatus()
 	
 	this.description = 'Applies child components when the target has the status condition.';
 	
-	this.data.push(new ListValue('Type', 'type', [ 'Active', 'Not Active' ], 'Active'));
-	this.data.push(new ListValue('Status', 'status', [ 'Any', 'Curse', 'Disarm', 'Root', 'Silence', 'Stun' ], 'Any'));
+	this.data.push(new ListValue('Type', 'type', [ 'Active', 'Not Active' ], 'Active')
+        .setTooltip('Whether or not the status should be active')
+    );
+	this.data.push(new ListValue('Status', 'status', [ 'Any', 'Curse', 'Disarm', 'Root', 'Silence', 'Stun' ], 'Any')
+        .setTooltip('The status to look for')
+    );
 }
 
 extend('ConditionTime', 'Component');
@@ -893,7 +998,9 @@ function ConditionTime()
 	
 	this.description = 'Applies child components when the server time matches the settings.';
 	
-	this.data.push(new ListValue('Time', 'time', [ 'Day', 'Night' ], 'Day'));
+	this.data.push(new ListValue('Time', 'time', [ 'Day', 'Night' ], 'Day')
+        .setTooltip('The time to check for in the current world')
+    );
 }
 
 extend('ConditionTool', 'Component');
@@ -903,8 +1010,12 @@ function ConditionTool()
 	
 	this.description = 'Applies child components when the target is wielding a matching tool.';
 	
-	this.data.push(new ListValue('Material', 'material', [ 'Any', 'Wood', 'Stone', 'Iron', 'Gold', 'Diamond' ], 'Any'));
-	this.data.push(new ListValue('Tool', 'tool', [ 'Any', 'Axe', 'Hoe', 'Pickaxe', 'Shovel', 'Sword' ], 'Any'));
+	this.data.push(new ListValue('Material', 'material', [ 'Any', 'Wood', 'Stone', 'Iron', 'Gold', 'Diamond' ], 'Any')
+        .setTooltip('The material the held tool needs to be made out of')
+    );
+	this.data.push(new ListValue('Tool', 'tool', [ 'Any', 'Axe', 'Hoe', 'Pickaxe', 'Shovel', 'Sword' ], 'Any')
+        .setTooltip('The type of tool it needs to be')
+    );
 }
 
 extend('ConditionWater', 'Component');
@@ -914,7 +1025,9 @@ function ConditionWater()
 	
 	this.description = 'Applies child components when the target is in or out of water, depending on the settings.';
 	
-	this.data.push(new ListValue('State', 'state', [ 'In Water', 'Out Of Water' ], 'In Water'));
+	this.data.push(new ListValue('State', 'state', [ 'In Water', 'Out Of Water' ], 'In Water')
+        .setTooltip('Whether or not the target needs to be in the water')
+    );
 }
 
 // -- Mechanic constructors ---------------------------------------------------- //
@@ -983,9 +1096,9 @@ function MechanicDamage()
 {
 	this.super('Damage', Type.MECHANIC, false);
 	
-	this.description = 'Inflicts skill damage to each target.';
+	this.description = 'Inflicts skill damage to each target. Multiplier type would be a percentage of the target health.';
 	
-	this.data.push(new ListValue('Type', 'type', [ 'Damage', 'Percent' ], 'Damage'));
+	this.data.push(new ListValue('Type', 'type', [ 'Damage', 'Multiplier' ], 'Damage'));
 	this.data.push(new AttributeValue("Value", "value", 3, 1));
 }
 
@@ -1134,6 +1247,18 @@ function MechanicItemProjectile()
 	this.data.push(new AttributeValue('Radius', 'radius', 2, 0).requireValue('spread', [ 'Rain' ]));
 }
 
+extend('MechanicItemRemove', 'Component');
+function MechanicItemRemove()
+{
+    this.super('Item Remove', Type.MECHANIC, true);
+    
+    this.description = 'Removes an item from a player inventory. This does nothing to mobs.';
+    
+    this.data.push(new ListValue('Material', 'material', materialList, 'Jack O Lantern')),
+    this.data.push(new IntValue('Data', 'data', 0));
+    this.data.push(new AttributeValue('Amount', 'amount', 1, 0));
+}
+
 extend('MechanicLaunch', 'Component');
 function MechanicLaunch()
 {
@@ -1185,7 +1310,7 @@ function MechanicParticle()
 	
 	this.description = 'Plays a particle effect about the target.';
 	
-	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager'));
+	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager'));
 	this.data.push(new ListValue('Arrangement', 'arrangement', [ 'Circle', 'Hemisphere', 'Sphere' ], 'Circle'));
 	this.data.push(new AttributeValue('Radius', 'radius', 4, 0));
 	this.data.push(new AttributeValue('Amount', 'amount', 20, 0));
@@ -1216,10 +1341,9 @@ function MechanicParticleProjectile()
 	this.description = 'Launches a projectile using particles as its visual that applies child components upon landing. The target passed on will be the collided target or the location where it landed if it missed.';
 	
 	this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone'));
-	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager'));
+	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager'));
 	this.data.push(new DoubleValue('Frequency', 'frequency', 0.1));
 	this.data.push(new AttributeValue('Speed', 'velocity', 3, 0));
-	this.data.push(new AttributeValue('Angle', 'angle', 30, 0));
 	this.data.push(new AttributeValue('Amount', 'amount', 1, 0));
 	this.data.push(new DoubleValue('Lifespan', 'lifespan', 3));
 	
