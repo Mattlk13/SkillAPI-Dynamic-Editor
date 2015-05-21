@@ -29,6 +29,7 @@ var Trigger = {
 	CROUCH               : { name: 'Crouch',               container: true, construct: TriggerCrouch             },
 	DEATH                : { name: 'Death',                container: true, construct: TriggerDeath              },
 	INITIALIZE           : { name: 'Initialize',           container: true, construct: TriggerInitialize         },
+    KILL                 : { name: 'Kill',                 container: true, construct: TriggerKill               },
     LAND                 : { name: 'Land',                 container: true, construct: TriggerLand               },
 	PHYSICAL_DAMAGE      : { name: 'Physical Damage',      container: true, construct: TriggerPhysicalDamage     },
 	SKILL_DAMAGE         : { name: 'Skill Damage',         container: true, construct: TriggerSkillDamage        },
@@ -45,6 +46,7 @@ var Target = {
 	LINEAR   : { name: 'Linear',   container: true, construct: TargetLinear   },
 	LOCATION : { name: 'Location', container: true, construct: TargetLocation },
     NEAREST  : { name: 'Nearest',  container: true, construct: TargetNearest  },
+    REMEMBER : { name: 'Remember', container: true, construct: TargetRemember },
  	SELF     : { name: 'Self',     container: true, construct: TargetSelf     },
 	SINGLE   : { name: 'Single',   container: true, construct: TargetSingle   }
 };
@@ -54,6 +56,7 @@ var Target = {
  */ 
 var Condition = {
 	BIOME:       { name: 'Biome',       container: true, construct: ConditionBiome      },
+    BLOCK:       { name: 'Block',       container: true, construct: ConditionBlock      },
 	CHANCE:      { name: 'Chance',      container: true, construct: ConditionChance     },
     CLASS:       { name: 'Class',       container: true, construct: ConditionClass      },
 	CLASS_LEVEL: { name: 'Class Level', container: true, construct: ConditionClassLevel },
@@ -74,6 +77,7 @@ var Condition = {
 	STATUS:      { name: 'Status',      container: true, construct: ConditionStatus     },
 	TIME:        { name: 'Time',        container: true, construct: ConditionTime       },
 	TOOL:        { name: 'Tool',        container: true, construct: ConditionTool       },
+    VALUE:       { name: 'Value',       container: true, construct: ConditionValue      },
 	WATER:       { name: 'Water',       container: true, construct: ConditionWater      }
 };
 
@@ -112,10 +116,15 @@ var Mechanic = {
 	PROJECTILE:          { name: 'Projectile',          container: true,  construct: MechanicProjectile         },
 	PURGE:               { name: 'Purge',               container: false, construct: MechanicPurge              },
 	PUSH:                { name: 'Push',                container: false, construct: MechanicPush               },
+    REMEMBER_TARGETS:    { name: 'Remember Targets',    container: false, construct: MechanicRememberTargets    },
 	REPEAT:              { name: 'Repeat',              container: true,  construct: MechanicRepeat             },
 	SOUND:               { name: 'Sound',               container: false, construct: MechanicSound              },
     SPEED:               { name: 'Speed',               container: false, construct: MechanicSpeed              },
 	STATUS:              { name: 'Status',              container: false, construct: MechanicStatus             },
+    VALUE_ADD:           { name: 'Value Add',           container: false, construct: MechanicValueAdd           },
+    VALUE_LORE:          { name: 'Value Lore',          container: false, construct: MechanicValueLore          },
+    VALUE_MULTIPLY:      { name: 'Value Multiply',      container: false, construct: MechanicValueMultiply      },
+    VALUE_SET:           { name: 'Value Set',           container: false, construct: MechanicValueSet           },
 	WARP:                { name: 'Warp',                container: false, construct: MechanicWarp               },
 	WARP_LOC:            { name: 'Warp Location',       container: false, construct: MechanicWarpLoc            },
 	WARP_RANDOM:         { name: 'Warp Random',         container: false, construct: MechanicWarpRandom         },
@@ -465,6 +474,14 @@ function TriggerInitialize()
 	this.description = 'Applies skill effects immediately. This can be used for passive abilities.';
 }
 
+extend('TriggerKill', 'Component');
+function TriggerKill()
+{
+    this.super('Kill', Type.TRIGGER, true);
+    
+    this.description = 'Applies skill effects upon killing something';
+}
+
 extend('TriggerLand', 'Component');
 function TriggerLand()
 {
@@ -667,6 +684,18 @@ function TargetNearest()
 	);
 }
 
+extend('TargetRemember', 'Component');
+function TargetRemember()
+{
+    this.super('Remember', Type.TARGET, true);
+    
+    this.description = 'Targets entities stored using the "Remember Targets" mechanic for the matching key. If it was never set, this will fail.';
+    
+    this.data.push(new StringValue('Key', 'key', 'target')
+        .setTooltip('The unique key for the target group that should match that used by the "Remember Targets" skill')
+    );
+}
+
 extend('TargetSelf', 'Component');
 function TargetSelf()
 {
@@ -711,6 +740,18 @@ function ConditionBiome()
 	this.data.push(new ListValue('Biome', 'biome', [ 'Beach', 'Desert', 'Desert Hills', 'Extreme Hills', 'Forest', 'Frozen Ocean', 'Frozen River', 'Hell', 'Ice Mountains', 'Ice Plains', 'Jungle', 'Jungle Hills', 'Mushroom Island', 'Mushroom Shore', 'Ocean', 'Plains', 'River', 'Sky', 'Small Mountains', 'Swampland', 'Taiga', 'Taiga Hills' ], 'Beach')
         .setTooltip('The biome to check for. For one of many biomes, make multiple biome conditions with the same children.')
     );
+}
+
+extend('ConditionBlock', 'Component');
+function ConditionBlock()
+{
+    this.super('Block', Type.CONDITION, true);
+    
+    this.description = 'Applies child components if the target is currently standing on a block of the given type.';
+    
+    this.data.push(new ListValue('Material', 'material', materialList, 'Dirt')
+        .setTooltip('The type of the block to require the targets to stand on')
+    ); 
 }
 
 extend('ConditionChance', 'Component');
@@ -1015,6 +1056,24 @@ function ConditionTool()
     );
 	this.data.push(new ListValue('Tool', 'tool', [ 'Any', 'Axe', 'Hoe', 'Pickaxe', 'Shovel', 'Sword' ], 'Any')
         .setTooltip('The type of tool it needs to be')
+    );
+}
+
+extend('ConditionValue', 'Component');
+function ConditionValue()
+{
+    this.super('Value', Type.CONDITION, true);
+    
+    this.description = 'Applies child components if a stored value is within the given range.';
+    
+    this.data.push(new StringValue('Key', 'key', 'value')
+        .setTooltip('The unique string used for the value set by the Value mechanics.')
+    );
+    this.data.push(new AttributeValue('Min Value', 'min-value', 1, 0)
+        .setTooltip('The lower bound of the required value')
+    );
+    this.data.push(new AttributeValue('Max Value', 'max-value', 999, 0)
+        .setTooltip('The upper bound of the required value')
     );
 }
 
@@ -1679,6 +1738,18 @@ function MechanicPush()
     );
 }
 
+extend('MechanicRememberTargets', 'Component');
+function MechanicRememberTargets()
+{
+    this.super('Remember Targets', Type.MECHANIC, false);
+    
+    this.description = 'Stores the current targets for later use under a specified key';
+    
+    this.data.push(new StringValue('Key', 'key', 'target')
+        .setTooltip('The unique key to store the targets under. The "Remember" target will use this key to apply effects to the targets later on.')
+    );
+}
+
 extend('MechanicRepeat', 'Component');
 function MechanicRepeat()
 {
@@ -1742,6 +1813,69 @@ function MechanicStatus()
     );
 	this.data.push(new AttributeValue('Duration', 'duration', 3, 1)
         .setTooltip('How long in seconds to apply the status')
+    );
+}
+
+extend('MechanicValueAdd', 'Component');
+function MechanicValueAdd()
+{
+    this.super('Value Add', Type.MECHANIC, false);
+    
+    this.description = 'Adds to a stored value under a unique key for the caster. If the value wasn\'t set before, this will set the value to the given amount.';
+    
+    this.data.push(new StringValue('Key', 'key', 'value')
+        .setTooltip('The unique key to store the value under. This key can be used in place of attribute values to use the stored value.')
+    );
+    this.data.push(new AttributeValue('Amount', 'amount', 1, 0)
+        .setTooltip('The amount to add to the value')
+    );
+}
+
+extend('MechanicValueLore', 'Component');
+function MechanicValueLore()
+{
+    this.super('Value Lore', Type.MECHANIC, false);
+    
+    this.description = 'Loads a value from a held item\'s lore into a stored value under the given unique key for the caster.';
+    
+    this.data.push(new StringValue('Key', 'key', 'value')
+        .setTooltip('The unique key to store the value under. This key can be used in place of attribute values to use the stored value.')
+    );
+    this.data.push(new StringValue('Regex', 'regex', 'Damage: {value}')
+        .setTooltip('The regex string to look for, using {value} as the number to store. If you do not know about regex, consider looking it up on Wikipedia or avoid using major characters such as [ ] { } ( ) . + ? * ^ \\ |')
+    );
+    this.data.push(new AttributeValue('Multiplier', 'multiplier', 1, 0)
+        .setTooltip('The multiplier for the acquired value. If you want the value to remain unchanged, leave this value at 1.')
+    );
+}
+
+extend('MechanicValueMultiply', 'Component');
+function MechanicValueMultiply()
+{
+    this.super('Value Multiply', Type.MECHANIC, false);
+    
+    this.description = 'Multiplies a stored value under a unique key for the caster. If the value wasn\'t set before, this will not do anything.';
+    
+    this.data.push(new StringValue('Key', 'key', 'value')
+        .setTooltip('The unique key to store the value under. This key can be used in place of attribute values to use the stored value.')
+    );
+    this.data.push(new AttributeValue('Multiplier', 'multiplier', 1, 0)
+        .setTooltip('The amount to multiply the value by')
+    );
+}
+
+extend('MechanicValueSet', 'Component');
+function MechanicValueSet()
+{
+    this.super('Value Set', Type.MECHANIC, false);
+    
+    this.description = 'Stores a specified value under a given key for the caster.';
+    
+    this.data.push(new StringValue('Key', 'key', 'value')
+        .setTooltip('The unique key to store the value under. This key can be used in place of attribute values to use the stored value.')
+    );
+    this.data.push(new AttributeValue('Value', 'value', 1, 0)
+        .setTooltip('The value to store under the key')
     );
 }
 

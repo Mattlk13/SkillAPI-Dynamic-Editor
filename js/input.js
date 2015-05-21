@@ -364,7 +364,6 @@ AttributeValue.prototype.createHTML = function(target)
 	this.baseBox.id = this.key + '-base';
 	this.baseBox.value = this.base;
 	this.baseBox.className = 'base';
-	this.baseBox.addEventListener('input', filterDouble);
 	target.appendChild(this.baseBox);
 	
 	this.left = document.createElement('label');
@@ -376,7 +375,6 @@ AttributeValue.prototype.createHTML = function(target)
 	this.scaleBox.id = this.key + '-scale';
 	this.scaleBox.value = this.scale;
 	this.scaleBox.className = 'scale';
-	this.scaleBox.addEventListener('input', filterDouble);
 	target.appendChild(this.scaleBox);
 	
 	this.right = document.createElement('label');
@@ -424,8 +422,8 @@ AttributeValue.prototype.update = function()
 {
 	if (this.baseBox && this.scaleBox) 
 	{
-		this.base = Number(this.baseBox.value);
-		this.scale = Number(this.scaleBox.value);
+		this.base = this.baseBox.value;
+		this.scale = this.scaleBox.value;
 	}
 }
 
