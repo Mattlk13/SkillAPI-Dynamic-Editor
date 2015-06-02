@@ -735,10 +735,10 @@ function ConditionBiome()
 	this.description = 'Applies child components when in a specified biome.';
 	
 	this.data.push(new ListValue('Type', 'type', [ 'In Biome', 'Not In Biome' ], 'In Biome')
-        .setTooltip('Whether or not the target should be in the biome')
+        .setTooltip('Whether or not the target should be in the biome. If checking for in the biome, they must be in any one of the checked biomes. If checking for the opposite, they must not be in any of the checked biomes.')
     );
-	this.data.push(new ListValue('Biome', 'biome', [ 'Beach', 'Desert', 'Desert Hills', 'Extreme Hills', 'Forest', 'Frozen Ocean', 'Frozen River', 'Hell', 'Ice Mountains', 'Ice Plains', 'Jungle', 'Jungle Hills', 'Mushroom Island', 'Mushroom Shore', 'Ocean', 'Plains', 'River', 'Sky', 'Small Mountains', 'Swampland', 'Taiga', 'Taiga Hills' ], 'Beach')
-        .setTooltip('The biome to check for. For one of many biomes, make multiple biome conditions with the same children.')
+	this.data.push(new ByteListValue('Biome', 'biome', [ 'Beach', 'Desert', 'Forest', 'Frozen', 'Hell', 'Hills', 'Ice', 'Jungle', 'Mesa', 'Mountains', 'Mushroom', 'Ocean', 'Plains', 'Plateau', 'River', 'Savanna', 'Shore', 'Sky', 'Swampland', 'Taiga' ], 1)
+        .setTooltip('The biomes to check for. These act as biome groups, containing all biomes whose names contain the text. For example, "JUNGLE_HILLS" falls into both Jungle and Hills')
     );
 }
 
@@ -749,6 +749,9 @@ function ConditionBlock()
     
     this.description = 'Applies child components if the target is currently standing on a block of the given type.';
     
+    this.data.push(new ListValue('Type', 'type', [ 'On Block', 'Not On Block' ], 'On Block')
+        .setTooltip('Whether or not the target should be in the biome. If checking for in the biome, they must be in any one of the checked biomes. If checking for the opposite, they must not be in any of the checked biomes.')
+    );
     this.data.push(new ListValue('Material', 'material', materialList, 'Dirt')
         .setTooltip('The type of the block to require the targets to stand on')
     ); 
@@ -1382,6 +1385,9 @@ function MechanicItemProjectile()
 	
 	this.description = 'Launches a projectile using an item as its visual that applies child components upon landing. The target passed on will be the collided target or the location where it landed if it missed.';
 	
+    this.data.push(new ListValue("Group", "group", ["Ally", "Enemy"], "Enemy")
+		.setTooltip('The alignment of targets to hit')
+	);
 	this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone')
         .setTooltip('The orientation for firing projectiles. Cone will fire arrows in a cone centered on your reticle. Horizontal cone does the same as cone, just locked to the XZ axis (parallel to the ground). Rain drops the projectiles from above the target. For firing one arrow straight, use "Cone"')
     );
@@ -1555,6 +1561,9 @@ function MechanicParticleProjectile()
 	
 	this.description = 'Launches a projectile using particles as its visual that applies child components upon landing. The target passed on will be the collided target or the location where it landed if it missed.';
 	
+    this.data.push(new ListValue("Group", "group", ["Ally", "Enemy"], "Enemy")
+		.setTooltip('The alignment of targets to hit')
+	);
 	this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone')
         .setTooltip('The orientation for firing projectiles. Cone will fire arrows in a cone centered on your reticle. Horizontal cone does the same as cone, just locked to the XZ axis (parallel to the ground). Rain drops the projectiles from above the target. For firing one arrow straight, use "Cone"')
     );
