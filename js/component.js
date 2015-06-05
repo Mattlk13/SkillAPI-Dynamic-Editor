@@ -55,6 +55,7 @@ var Target = {
  * Available condition component data
  */ 
 var Condition = {
+    ATTRIBUTE:   { name: 'Attribute',   container: true, construct: ConditionAttribute  },
 	BIOME:       { name: 'Biome',       container: true, construct: ConditionBiome      },
     BLOCK:       { name: 'Block',       container: true, construct: ConditionBlock      },
 	CHANCE:      { name: 'Chance',      container: true, construct: ConditionChance     },
@@ -122,6 +123,8 @@ var Mechanic = {
     SPEED:               { name: 'Speed',               container: false, construct: MechanicSpeed              },
 	STATUS:              { name: 'Status',              container: false, construct: MechanicStatus             },
     VALUE_ADD:           { name: 'Value Add',           container: false, construct: MechanicValueAdd           },
+    VALUE_ATTRIBUTE:     { name: 'Value Attribute',     container: false, construct: MechanicValueAttribute     },
+    VALUE_LOCATION:      { name: 'Value Location',      container: false, construct: MechanicValueLocation      },
     VALUE_LORE:          { name: 'Value Lore',          container: false, construct: MechanicValueLore          },
     VALUE_MULTIPLY:      { name: 'Value Multiply',      container: false, construct: MechanicValueMultiply      },
     VALUE_SET:           { name: 'Value Set',           container: false, construct: MechanicValueSet           },
@@ -130,6 +133,7 @@ var Mechanic = {
 	WARP_RANDOM:         { name: 'Warp Random',         container: false, construct: MechanicWarpRandom         },
     WARP_SWAP:           { name: 'Warp Swap',           container: false, construct: MechanicWarpSwap           },
 	WARP_TARGET:         { name: 'Warp Target',         container: false, construct: MechanicWarpTarget         },
+    WARP_VALUE:          { name: 'Warp Value',          container: false, construct: MechanicWarpValue          },
 	WOLF:                { name: 'Wolf',                container: true,  construct: MechanicWolf               }
 };
 
@@ -726,6 +730,24 @@ function TargetSingle()
 }
 
 // -- Condition constructors --------------------------------------------------- //
+
+extend('ConditionAttribute', 'Component');
+function ConditionAttribute() 
+{
+    this.super('Attribute', Type.CONDITION, true);
+    
+    this.description = 'Requires the target to have a given number of attributes';
+    
+    this.data.push(new StringValue('Attribute', 'attribute', 'Vitality')
+        .setTooltip('The name of the attribute you are checking the value of')
+    );
+    this.data.push(new AttributeValue('Min', 'min', 0, 0)
+        .setTooltip('The minimum amount of the attribute the target requires')
+    );
+    this.data.push(new AttributeValue('Max', 'max', 999, 0)
+        .setTooltip('The maximum amount of the attribute the target requires')
+    );
+}
 
 extend('ConditionBiome', 'Component');
 function ConditionBiome()
@@ -1840,6 +1862,33 @@ function MechanicValueAdd()
     );
 }
 
+extend('MechanicValueAttribute', 'Component');
+function MechanicValueAttribute() 
+{
+    this.super('Value Attribute', Type.MECHANIC, false);
+    
+    this.description = 'Loads a player\'s attribute count for a specific attribute as a stored value to be used in other mechanics.';
+    
+    this.data.push(new StringValue('Key', 'key', 'attribute')
+        .setTooltip('The unique key to store the value under. This key can be used in place of attribute values to use the stored value.')
+    );
+    this.data.push(new StringValue('Attribute', 'attribute', 'Vitality')
+        .setTooltip('The name of the attribute you are loading the value of')
+    );
+}
+
+extend('MechanicValueLocation', 'Component');
+function MechanicValueLocation() 
+{
+    this.super('Value Location', Type.MECHANIC, false);
+    
+    this.description = 'Loads the first target\'s current location into a stored value for use at a later time.';
+    
+    this.data.push(new StringValue('Key', 'key', 'location')
+        .setTooltip('The unique key to store the location under. This key can be used in place of attribute values to use the stored value.')
+    );
+}
+
 extend('MechanicValueLore', 'Component');
 function MechanicValueLore()
 {
@@ -1847,7 +1896,7 @@ function MechanicValueLore()
     
     this.description = 'Loads a value from a held item\'s lore into a stored value under the given unique key for the caster.';
     
-    this.data.push(new StringValue('Key', 'key', 'value')
+    this.data.push(new StringValue('Key', 'key', 'lore')
         .setTooltip('The unique key to store the value under. This key can be used in place of attribute values to use the stored value.')
     );
     this.data.push(new StringValue('Regex', 'regex', 'Damage: {value}')
@@ -1971,6 +2020,18 @@ function MechanicWarpTarget()
 	
 	this.data.push(new ListValue('Type', 'type', [ 'Caster to Target', 'Target to Caster' ], 'Caster to Target')
         .setTooltip('The direction to warp the involved targets')
+    );
+}
+
+extend('MechanicWarpValue', 'Component');
+function MechanicWarpValue() 
+{
+    this.super('Warp Value', Type.MECHANIC, false);
+    
+    this.description = 'Warps all targets to a location remembered using the Value Location mechanic.';
+    
+    this.data.push(new StringValue('Key', 'key', 'location')
+        .setTooltip('The unique key the location is stored under. This should be the same key used in the Value Location mechanic.')
     );
 }
 
