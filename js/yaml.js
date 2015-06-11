@@ -15,7 +15,7 @@ var Regex = {
  */ 
 function parseYAML(text)
 {
-	text = text.replace(/\r\n/g, '\n').replace(/ +\n/g, '');
+	text = text.replace(/\r\n/g, '\n').replace(/\n *\n/g, '\n').replace(/ +\n/g, '\n');
 	var data = new YAMLObject();
 	var index = 0;
 	var lines = text.split('\n');
