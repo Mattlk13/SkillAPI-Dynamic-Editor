@@ -57,25 +57,7 @@ depend('material', function() {
 			showSkillPage('skillForm');
 		});
 		document.getElementById('saveButton').addEventListener('click', function(e) {
-			activeSkill.update();
-			if (activeComponent)
-			{
-				activeComponent.update();
-			}
-			var data = 'loaded: false\n';
-            var alphabetic = skills.slice(0);
-            alphabetic.sort(function(a, b) {
-                var an = a.data[0].value;
-                var bn = b.data[0].value;
-                if (an > bn) return 1;
-                if (an < bn) return -1;
-                return 0;
-            });
-			for (var i = 0; i < alphabetic.length; i++)
-			{
-				data += alphabetic[i].getSaveString();
-			}
-			saveToFile('skills.yml', data);
+			saveToFile('skills.yml', getSkillSaveData());
 		});
 		document.getElementById('saveSkill').addEventListener('click', function(e) {
 			saveToFile(activeSkill.data[0].value + '.yml', activeSkill.getSaveString());
@@ -113,16 +95,42 @@ depend('material', function() {
 			}
 		});
 		document.getElementById('saveButton').addEventListener('click', function(e) {
-			activeClass.update();
-			var data = 'loaded: false\n';
-			for (var i = 0; i < classes.length; i++)
-			{
-				data += classes[i].getSaveString();
-			}
-			saveToFile('classes.yml', data);
+			saveToFile('classes.yml', getClassSaveData());
 		});
 	});
 });
+
+function getSkillSaveData() {
+    activeSkill.update();
+    if (activeComponent)
+    {
+        activeComponent.update();
+    }
+    var data = 'loaded: false\n';
+    var alphabetic = skills.slice(0);
+    alphabetic.sort(function(a, b) {
+        var an = a.data[0].value;
+        var bn = b.data[0].value;
+        if (an > bn) return 1;
+        if (an < bn) return -1;
+        return 0;
+    });
+    for (var i = 0; i < alphabetic.length; i++)
+    {
+        data += alphabetic[i].getSaveString();
+    }
+    return data;
+}
+
+function getClassSaveData() {
+    activeClass.update();
+    var data = 'loaded: false\n';
+    for (var i = 0; i < classes.length; i++)
+    {
+        data += classes[i].getSaveString();
+    }
+    return data;
+}
 
 function setupOptionList(div, list, type) 
 {
@@ -171,24 +179,11 @@ window.onload = function()
 	});
 	
 	document.getElementById('skillTab').addEventListener('click', function(e) {
-		if (!skillsActive) 
-		{
-			this.className = 'tab tabLeft tabActive';
-			document.getElementById('classTab').className = 'tab tabRight';
-			document.getElementById('skills').style.display = 'block';
-			document.getElementById('classes').style.display = 'none';
-			skillsActive = true;
-		}
+		switchToSkills();
+        
 	});
 	document.getElementById('classTab').addEventListener('click', function(e) {
-		if (skillsActive) 
-		{
-			this.className = 'tab tabRight tabActive';
-			document.getElementById('skillTab').className = 'tab tabLeft';
-			document.getElementById('classes').style.display = 'block';
-			document.getElementById('skills').style.display = 'none';
-			skillsActive = false;
-		}
+		switchToClasses();
 	});
 	
 	var cancelButtons = document.querySelectorAll('.cancelButton');
@@ -198,6 +193,57 @@ window.onload = function()
 			showSkillPage('builder');
 		});
 	}
+    
+    var skillData = localStorage.getItem('skillData');
+    var skillIndex = localStorage.getItem('skillIndex');
+    var classData = localStorage.getItem('classData');
+    var classIndex = localStorage.getItem('classIndex');
+    if (skillData) {
+        skills = [];
+        document.getElementById('skillList').remove(0);
+        loadSkillText(skillData);
+        if (skillIndex) {
+            document.getElementById('skillList').selectedIndex = parseInt(skillIndex);
+            activeSkill = skills[parseInt(skillIndex)];
+            activeSkill.apply();
+            showSkillPage('builder');
+        }
+    }
+    if (classData) {
+        classes = [];
+        document.getElementById('classList').remove(0);
+        loadClassText(classData);
+        if (classIndex) {
+            document.getElementById('classList').selectedIndex = parseInt(classIndex);
+            activeClass = classes[parseInt(classIndex)];
+            activeClass.createFormHTML();
+        }
+    }
+    if (localStorage.getItem('skillsActive') == 'false') {
+        switchToClasses();
+    }
+}
+
+function switchToSkills() {
+    if (!skillsActive) 
+    {
+        document.getElementById('skillTab').className = 'tab tabLeft tabActive';
+        document.getElementById('classTab').className = 'tab tabRight';
+        document.getElementById('skills').style.display = 'block';
+        document.getElementById('classes').style.display = 'none';
+        skillsActive = true;
+    }
+}
+
+function switchToClasses() {
+    if (skillsActive) 
+    {
+        document.getElementById('classTab').className = 'tab tabRight tabActive';
+        document.getElementById('skillTab').className = 'tab tabLeft';
+        document.getElementById('classes').style.display = 'block';
+        document.getElementById('skills').style.display = 'none';
+        skillsActive = false;
+    }
 }
 
 /**
@@ -313,7 +359,12 @@ function loadIndividual(e) {
 function loadSkills(e) {
     var text = e.target.result;
     document.activeElement.blur();
-	
+    loadSkillText(text);
+}
+
+// Loads skill data from a string
+function loadSkillText(text) {
+    
 	// Load new skills
 	var data = parseYAML(text);
 	for (var key in data)
@@ -342,7 +393,12 @@ function loadSkills(e) {
 function loadClasses(e) {
     var text = e.target.result;
     document.activeElement.blur();
+    loadClassText(text);
+}
 	
+// Loads class data from a string
+function loadClassText(text) {
+    
 	// Load new classes
 	var data = parseYAML(text);
 	for (var key in data)
@@ -465,4 +521,15 @@ function loadSection(data)
 			}
 		}
 	}
+}
+
+/**
+ * Remember the current session data for next time
+ */
+window.onbeforeunload = function() {
+    localStorage.setItem('skillData', getSkillSaveData());
+    localStorage.setItem('classData', getClassSaveData());
+    localStorage.setItem('skillsActive', this.skillsActive ? 'true' : 'false');
+    localStorage.setItem('skillIndex', document.getElementById('skillList').selectedIndex);
+    localStorage.setItem('classIndex', document.getElementById('classList').selectedIndex);
 }

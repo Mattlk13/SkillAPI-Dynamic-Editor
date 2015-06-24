@@ -1839,7 +1839,7 @@ function MechanicStatus()
 	
 	this.description = 'Applies a status effect to the target for a duration.';
 	
-	this.data.push(new ListValue('Status', 'status', [ 'Absorb', 'Curse', 'Disarm', 'Root', 'Silence', 'Stun' ], 'Stun')
+	this.data.push(new ListValue('Status', 'status', [ 'Absorb', 'Curse', 'Disarm', 'Invincible', 'Root', 'Silence', 'Stun' ], 'Stun')
         .setTooltip('The status to apply')
     );
 	this.data.push(new AttributeValue('Duration', 'duration', 3, 1)
