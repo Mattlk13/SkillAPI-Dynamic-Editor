@@ -23,7 +23,7 @@ function Class(name)
 		new AttributeValue('Health', 'health', 20, 0).setTooltip('The amount of health the class has'),
 		new AttributeValue('Mana', 'mana', 20, 0).setTooltip('The amount of mana the class has'),
 		new DoubleValue('Mana Regen', 'mana-regen', 1, 0).setTooltip('The amount of mana the class regens each interval. The interval is in the config.yml and by default is once every second. If you want to regen a decimal amount per second, increase the interval.'),
-		new ListValue('Skill Tree', 'tree', [ 'Basic Horizontal', 'Basic Vertical', 'Level Horizontal', 'Level Vertical', 'Requirement' ], 'Requirement'),
+		new ListValue('Skill Tree', 'tree', [ 'Basic Horizontal', 'Basic Vertical', 'Level Horizontal', 'Level Vertical', 'Flood', 'Requirement' ], 'Requirement'),
 		new StringListValue('Skills (one per line)', 'skills', []).setTooltip('The skills the class is able to use'),
 		new ListValue('Icon', 'icon', materialList, 'Jack O Lantern').setTooltip('The item that represents the class in GUIs'),
 		new IntValue('Icon Data', 'icon-data', 0).setTooltip('The data/durability value of the item that represents the class in GUIs'),

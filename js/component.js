@@ -109,6 +109,7 @@ var Mechanic = {
 	MANA:                { name: 'Mana',                container: false, construct: MechanicMana               },
 	MESSAGE:             { name: 'Message',             container: false, construct: MechanicMessage            },
 	PARTICLE:            { name: 'Particle',            container: false, construct: MechanicParticle           },
+    PARTICLE_ANIMATION:  { name: 'Particle Animation',  container: false, construct: MechanicParticleAnimation  },
 	PARTICLE_PROJECTILE: { name: 'Particle Projectile', container: true,  construct: MechanicParticleProjectile },
 	PASSIVE:             { name: 'Passive',             container: true,  construct: MechanicPassive            },
 	PERMISSION:          { name: 'Permission',          container: false, construct: MechanicPermission         },
@@ -1525,6 +1526,91 @@ function MechanicParticle()
 	
 	this.description = 'Plays a particle effect about the target.';
 	
+	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager')
+        .setTooltip('The type of particle to display. Particle effects that show the DX, DY, and DZ options are not compatible with Cauldron')
+    );
+	this.data.push(new ListValue('Arrangement', 'arrangement', [ 'Circle', 'Hemisphere', 'Sphere' ], 'Circle')
+        .setTooltip('The arrangement to use for the particles. Circle is a 2D circle, Hemisphere is half a 3D sphere, and Sphere is a 3D sphere')
+    );
+	this.data.push(new AttributeValue('Radius', 'radius', 4, 0)
+        .setTooltip('The radius of the arrangement in blocks')
+    );
+	this.data.push(new AttributeValue('Amount', 'amount', 20, 0)
+        .setTooltip('The amount of particles to play')
+    );
+	this.data.push(new DoubleValue('Forward Offset', 'forward', 0)
+        .setTooltip('How far forward in front of the target in blocks to play the particles. A negative value will go behind.')
+    );
+	this.data.push(new DoubleValue('Upward Offset', 'upward', 0)
+        .setTooltip('How far above the target in blocks to play the particles. A negative value will go below.')
+    );
+	this.data.push(new DoubleValue('Right Offset', 'right', 0)
+        .setTooltip('How far to the right of the target to play the particles. A negative value will go to the left.')
+    );
+	
+	// Circle arrangement direction
+	this.data.push(new ListValue('Circle Direction', 'direction', [ 'XY', 'XZ', 'YZ' ], 'XZ').requireValue('arrangement', [ 'Circle' ])
+        .setTooltip('The orientation of the circle. XY and YZ are vertical circles while XZ is a horizontal circle.')
+    );
+	
+	// Bukkit particle data value
+	this.data.push(new IntValue('Data', 'data', 0).requireValue('particle', [ 'Smoke', 'Ender Signal', 'Mobspawner Flames', 'Potion Break' ])
+        .setTooltip('The data value to use for the particle. The effect changes between particles such as the orientation for smoke particles or the color for potion break')
+    );
+	
+	// Reflection particle data
+	var reflectList = [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Explode', 'Fireworks Spark', 'Flame', 'Footstep', 'Happy Villager', 'Hear', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Portal', 'Red Dust', 'Slime', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ];
+	this.data.push(new IntValue('Visible Radius', 'visible-radius', 25).requireValue('particle', reflectList)
+        .setTooltip('How far away players can see the particles from in blocks')
+    );
+	this.data.push(new DoubleValue('DX', 'dx', 0).requireValue('particle', reflectList)
+        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the X direction.')
+    );
+	this.data.push(new DoubleValue('DY', 'dy', 0).requireValue('particle', reflectList)
+        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the Y direction.')
+    );
+	this.data.push(new DoubleValue('DZ', 'dz', 0).requireValue('particle', reflectList)
+        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the Z direction.')
+    );
+	this.data.push(new DoubleValue('Particle Speed', 'speed', 1).requireValue('particle', reflectList)
+        .setTooltip('A packet variable that varies between particles. It generally controlls the color or velocity of the particle.')
+    );
+}
+
+extend('MechanicParticleAnimation', 'Component');
+function MechanicParticleAnimation()
+{
+    this.super('Particle Animation', Type.MECHANIC, false);
+	
+	this.description = 'Plays an animated particle effect at the location of each target over time by applying various transformations.';
+	
+    this.data.push(new IntValue('Steps', 'steps', 1, 0)
+        .setTooltip('The number of times to play particles and apply translations each application.')
+    );
+    this.data.push(new DoubleValue('Frequency', 'frequency', 0.05, 0)
+        .setTooltip('How often to apply the animation in seconds. 0.05 is the fastest (1 tick). Lower than that will act the same.')
+    );
+    this.data.push(new IntValue('Angle', 'angle', 0)
+        .setTooltip('How far the animation should rotate over the duration in degrees')
+    );
+    this.data.push(new IntValue('Start Angle', 'start', 0)
+        .setTooltip('The starting orientation of the animation. Horizontal translations and the forward/right offsets will be based off of this.')
+    );
+    this.data.push(new AttributeValue('Duration', 'duration', 5, 0)
+        .setTooltip('How long the animation should last for in seconds')
+    );
+    this.data.push(new AttributeValue('H-Translation', 'h-translation', 0, 0)
+        .setTooltip('How far the animation moves horizontally relative to the center over a cycle. Positive values make it expand from the center while negative values make it contract.')
+    );
+    this.data.push(new AttributeValue('V-Translation', 'v-translation', 0, 0)
+        .setTooltip('How far the animation moves vertically over a cycle. Positive values make it rise while negative values make it sink.')
+    );
+    this.data.push(new IntValue('H-Cycles', 'h-cycles', 1)
+        .setTooltip('How many times to move the animation position throughout the animation. Every other cycle moves it back to where it started. For example, two cycles would move it out and then back in.')
+    );
+    this.data.push(new IntValue('V-Cycles', 'v-cycles', 1)
+        .setTooltip('How many times to move the animation position throughout the animation. Every other cycle moves it back to where it started. For example, two cycles would move it up and then back down.')
+    );
 	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager')
         .setTooltip('The type of particle to display. Particle effects that show the DX, DY, and DZ options are not compatible with Cauldron')
     );
