@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 
+depend('sounds');
 depend('filter');
 depend('input');
 depend('yaml');
