@@ -26,6 +26,7 @@ var Type = {
  */
 var Trigger = {
 	CAST                 : { name: 'Cast',                 container: true, construct: TriggerCast               },
+    CLEANUP              : { name: 'Cleanup',              container: true, construct: TriggerCleanup            },
 	CROUCH               : { name: 'Crouch',               container: true, construct: TriggerCrouch             },
 	DEATH                : { name: 'Death',                container: true, construct: TriggerDeath              },
 	INITIALIZE           : { name: 'Initialize',           container: true, construct: TriggerInitialize         },
@@ -452,6 +453,14 @@ function TriggerCast()
 	this.description = 'Applies skill effects when a player casts the skill using either the cast command, the skill bar, or click combos.';
 }
 
+extend('TriggerCleanup', 'Component');
+function TriggerCleanup()
+{
+    this.super('Cleanup', Type.TRIGGER, true);
+    
+    this.description = 'Applies skill effects when the player disconnects or unlearns the skill. This is always applied with a skill level of 1 just for the sake of math.';
+}
+
 extend('TriggerCrouch', 'Component');
 function TriggerCrouch()
 {
@@ -471,6 +480,23 @@ function TriggerDeath()
 	
 	this.description = 'Applies skill effects when a player dies.';
 }
+
+/*
+extend('TriggerHealth', 'Component');
+function TriggerHealth() 
+{
+    this.super('Health', Type.TRIGGER, true);
+    
+    this.description = 'Applies skill effects when dropping below a threshold of health';
+    
+    this.data.push(new ListValue('Type', 'type', [ 'Percentage', 'Flat' ], 'Percentage')
+        .setTooltip('Whether to use a percentage or flat amount of health')
+    );
+    this.data.push(new AttributeValue('Amount', 'amount', 20, 0)
+        .setTooltip('The amount of health to trigger on')
+    );
+}
+*/
 
 extend('TriggerInitialize', 'Component');
 function TriggerInitialize()
