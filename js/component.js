@@ -403,6 +403,8 @@ Component.prototype.update = function()
  */
 Component.prototype.getSaveString = function(spacing)
 {
+    this.createFormHTML();
+    
 	var id = '';
 	var index = saveIndex;
 	while (index > 0 || id.length == 0)
@@ -417,9 +419,10 @@ Component.prototype.getSaveString = function(spacing)
 	if (this.data.length > 0)
 	{
 		result += spacing + '  data:\n';
-		for (var i = 0; i < this.data.length; i++)
+        for (var i = 0; i < this.data.length; i++)
 		{
-			result += this.data[i].getSaveString(spacing + '    ');
+            if (!this.data[i].hidden)
+                result += this.data[i].getSaveString(spacing + '    ');
 		}
 	}
 	if (this.components.length > 0)
@@ -427,8 +430,7 @@ Component.prototype.getSaveString = function(spacing)
 		result += spacing + '  children:\n';
 		for (var j = 0; j < this.components.length; j++)
 		{
-            if (!this.components[j].hidden)
-                result += this.components[j].getSaveString(spacing + '    ');
+            result += this.components[j].getSaveString(spacing + '    ');
 		}
 	}
 	return result;
@@ -1553,9 +1555,17 @@ function MechanicParticle()
 	
 	this.description = 'Plays a particle effect about the target.';
 	
-	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager')
+	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Block Crack', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Icon Crack', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager')
         .setTooltip('The type of particle to display. Particle effects that show the DX, DY, and DZ options are not compatible with Cauldron')
     );
+    
+    this.data.push(new ListValue('Material', 'material', materialList, 'Dirt').requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
+        .setTooltip('The material to use for the Block Crack or Icon Crack particles')
+    );
+    this.data.push(new IntValue('Type', 'type', 0).requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
+        .setTooltip('The material data value to se for the Block Crack or Icon Crack particles')
+    );
+    
 	this.data.push(new ListValue('Arrangement', 'arrangement', [ 'Circle', 'Hemisphere', 'Sphere' ], 'Circle')
         .setTooltip('The arrangement to use for the particles. Circle is a 2D circle, Hemisphere is half a 3D sphere, and Sphere is a 3D sphere')
     );
@@ -1638,9 +1648,17 @@ function MechanicParticleAnimation()
     this.data.push(new IntValue('V-Cycles', 'v-cycles', 1)
         .setTooltip('How many times to move the animation position throughout the animation. Every other cycle moves it back to where it started. For example, two cycles would move it up and then back down.')
     );
-	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager')
+	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Block Crack', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Icon Crack', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager')
         .setTooltip('The type of particle to display. Particle effects that show the DX, DY, and DZ options are not compatible with Cauldron')
     );
+    
+    this.data.push(new ListValue('Material', 'material', materialList, 'Dirt').requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
+        .setTooltip('The material to use for the Block Crack or Icon Crack particles')
+    );
+    this.data.push(new IntValue('Type', 'type', 0).requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
+        .setTooltip('The material data value to se for the Block Crack or Icon Crack particles')
+    );
+    
 	this.data.push(new ListValue('Arrangement', 'arrangement', [ 'Circle', 'Hemisphere', 'Sphere' ], 'Circle')
         .setTooltip('The arrangement to use for the particles. Circle is a 2D circle, Hemisphere is half a 3D sphere, and Sphere is a 3D sphere')
     );
@@ -1702,9 +1720,17 @@ function MechanicParticleProjectile()
 	this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone')
         .setTooltip('The orientation for firing projectiles. Cone will fire arrows in a cone centered on your reticle. Horizontal cone does the same as cone, just locked to the XZ axis (parallel to the ground). Rain drops the projectiles from above the target. For firing one arrow straight, use "Cone"')
     );
-	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager')
+	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Block Crack', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Icon Crack', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager')
         .setTooltip('The type of particle to display. Particle effects that show the DX, DY, and DZ options are not compatible with Cauldron')
     );
+    
+    this.data.push(new ListValue('Material', 'material', materialList, 'Dirt').requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
+        .setTooltip('The material to use for the Block Crack or Icon Crack particles')
+    );
+    this.data.push(new IntValue('Type', 'type', 0).requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
+        .setTooltip('The material data value to se for the Block Crack or Icon Crack particles')
+    );
+    
 	this.data.push(new DoubleValue('Frequency', 'frequency', 0.05)
         .setTooltip('How often to play a particle effect where the projectile is. It is recommended not to change this value unless there are too many particles playing')
     );
@@ -1725,7 +1751,8 @@ function MechanicParticleProjectile()
 	
 	// Reflection particle data
 	var reflectList = [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Explode', 'Fireworks Spark', 'Flame', 'Footstep', 'Happy Villager', 'Hear', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Portal', 'Red Dust', 'Slime', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ];
-	this.data.push(new IntValue('Visible Radius', 'visible-radius', 25).requireValue('particle', reflectList)
+    var reflectList2 = [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Explode', 'Fireworks Spark', 'Flame', 'Footstep', 'Happy Villager', 'Hear', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Portal', 'Red Dust', 'Slime', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Block Crack', 'Icon Crack' ];
+	this.data.push(new IntValue('Visible Radius', 'visible-radius', 25).requireValue('particle', reflectList2)
         .setTooltip('How far away players can see the particles from in blocks')
     );
 	this.data.push(new DoubleValue('DX', 'dx', 0).requireValue('particle', reflectList)
@@ -1737,7 +1764,7 @@ function MechanicParticleProjectile()
 	this.data.push(new DoubleValue('DZ', 'dz', 0).requireValue('particle', reflectList)
         .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the Z direction.')
     );
-	this.data.push(new DoubleValue('Particle Speed', 'speed', 1).requireValue('particle', reflectList)
+	this.data.push(new DoubleValue('Particle Speed', 'speed', 1).requireValue('particle', reflectList2)
         .setTooltip('A packet variable that varies between particles. It generally controlls the color or velocity of the particle.')
     );
 	
@@ -1923,7 +1950,7 @@ function MechanicSound()
         .setTooltip('The version of the server this will be playing for. Servers 1.9 and later have much different sounds available')
     );
 	
-    this.data.push(new ListValue('Sound', 'sound', SOUNDS_POST, 'Ambience Cave').requireValue('version', [ '1.9+' ])
+    this.data.push(new ListValue('Sound', 'newsound', SOUNDS_POST, 'Ambience Cave').requireValue('version', [ '1.9+' ])
         .setTooltip('The sound clip to play')
     );
     this.data.push(new ListValue('Sound', 'sound', SOUNDS_PRE, 'Ambience Cave').requireValue('version', [ 'Pre 1.9' ])
@@ -2161,7 +2188,7 @@ function MechanicWolf()
 {
 	this.super('Wolf', Type.MECHANIC, true);
 	
-	this.description = 'Summons a wolf on each target for a duration. Child components will start off targeting the wolf so you can add effects to it.';
+	this.description = 'Summons a wolf on each target for a duration. Child components will start off targeting the wolf so you can add effects to it. You can also give it its own skillset, though Cast triggers will not occur.';
 	
 	this.data.push(new ListValue('Collar Color', 'color', dyeList, 'Black')
         .setTooltip('The color of the collar that the wolf should wear')
@@ -2177,6 +2204,9 @@ function MechanicWolf()
     );
 	this.data.push(new AttributeValue('Duration', 'seconds', 10, 0)
         .setTooltip('How long to summon the wolf for')
+    );
+    this.data.push(new StringListValue('Skills (one per line)', 'skills', [])
+        .setTooltip('The skills to give the wolf. Skills are executed at the level of the skill summoning the wolf. Skills needing a Cast trigger will not work.')
     );
 }
 
