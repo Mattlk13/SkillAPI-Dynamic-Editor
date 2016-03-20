@@ -205,7 +205,7 @@ window.onload = function()
         loadSkillText(skillData);
         if (skillIndex) {
             document.getElementById('skillList').selectedIndex = parseInt(skillIndex);
-            activeSkill = skills[parseInt(skillIndex)];
+            activeSkill = skills[Math.max(0, Math.min(skills.length - 1, parseInt(skillIndex)))];
             activeSkill.apply();
             showSkillPage('builder');
         }
@@ -216,7 +216,7 @@ window.onload = function()
         loadClassText(classData);
         if (classIndex) {
             document.getElementById('classList').selectedIndex = parseInt(classIndex);
-            activeClass = classes[parseInt(classIndex)];
+            activeClass = classes[Math.max(0, Math.min(classes.length - 1, parseInt(classIndex)))];
             activeClass.createFormHTML();
         }
     }

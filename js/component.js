@@ -32,6 +32,7 @@ var Trigger = {
 	INITIALIZE           : { name: 'Initialize',           container: true, construct: TriggerInitialize         },
     KILL                 : { name: 'Kill',                 container: true, construct: TriggerKill               },
     LAND                 : { name: 'Land',                 container: true, construct: TriggerLand               },
+    LAUNCH               : { name: 'Launch',               container: true, construct: TriggerLaunch             },
 	PHYSICAL_DAMAGE      : { name: 'Physical Damage',      container: true, construct: TriggerPhysicalDamage     },
 	SKILL_DAMAGE         : { name: 'Skill Damage',         container: true, construct: TriggerSkillDamage        },
 	TOOK_PHYSICAL_DAMAGE : { name: 'Took Physical Damage', container: true, construct: TriggerTookPhysicalDamage },
@@ -47,6 +48,7 @@ var Target = {
 	LINEAR   : { name: 'Linear',   container: true, construct: TargetLinear   },
 	LOCATION : { name: 'Location', container: true, construct: TargetLocation },
     NEAREST  : { name: 'Nearest',  container: true, construct: TargetNearest  },
+    OFFSET   : { name: 'Offset',   container: true, construct: TargetOffset   },
     REMEMBER : { name: 'Remember', container: true, construct: TargetRemember },
  	SELF     : { name: 'Self',     container: true, construct: TargetSelf     },
 	SINGLE   : { name: 'Single',   container: true, construct: TargetSingle   }
@@ -71,7 +73,6 @@ var Condition = {
     INVENTORY:   { name: 'Inventory',   container: true, construct: ConditionInventory  },
 	ITEM:        { name: 'Item',        container: true, construct: ConditionItem       },
 	LIGHT:       { name: 'Light',       container: true, construct: ConditionLight      },
-	LORE:        { name: 'Lore',        container: true, construct: ConditionLore       },
 	MANA:        { name: 'Mana',        container: true, construct: ConditionMana       },
 	NAME:        { name: 'Name',        container: true, construct: ConditionName       },
 	POTION:      { name: 'Potion',      container: true, construct: ConditionPotion     },
@@ -88,6 +89,8 @@ var Condition = {
  */
 var Mechanic = {
     BLOCK:               { name: 'Block',               container: false, construct: MechanicBlock              },
+    CANCEL:              { name: 'Cancel',              container: false, construct: MechanicCancel             },
+    CHANNEL:             { name: 'Channel',             container: true,  construct: MechanicChannel            },
 	CLEANSE:             { name: 'Cleanse',             container: false, construct: MechanicCleanse            },
 	COMMAND:             { name: 'Command',             container: false, construct: MechanicCommand            },
 	COOLDOWN:            { name: 'Cooldown',            container: false, construct: MechanicCooldown           },
@@ -96,12 +99,14 @@ var Mechanic = {
 	DAMAGE_LORE:         { name: 'Damage Lore',         container: false, construct: MechanicDamageLore         },
 	DEFENSE_BUFF:        { name: 'Defense Buff',        container: false, construct: MechanicDefenseBuff        },
 	DELAY:               { name: 'Delay',               container: true,  construct: MechanicDelay              },
+    EXPLOSION:           { name: 'Explosion',           container: false, construct: MechanicExplosion          },
 	FIRE:                { name: 'Fire',                container: false, construct: MechanicFire               },
 	FLAG:                { name: 'Flag',                container: false, construct: MechanicFlag               },
 	FLAG_CLEAR:          { name: 'Flag Clear',          container: false, construct: MechanicFlagClear          },
 	FLAG_TOGGLE:         { name: 'Flag Toggle',         container: false, construct: MechanicFlagToggle         },
 	HEAL:                { name: 'Heal',                container: false, construct: MechanicHeal               },
 	IMMUNITY:            { name: 'Immunity',            container: false, construct: MechanicImmunity           },
+    INTERRUPT:           { name: 'Interrupt',           container: false, construct: MechanicInterrupt          },
 	ITEM:                { name: 'Item',                container: false, construct: MechanicItem               },
 	ITEM_PROJECTILE:     { name: 'Item Projectile',     container: true,  construct: MechanicItemProjectile     },
     ITEM_REMOVE:         { name: 'Item Remove',         container: false, construct: MechanicItemRemove         },
@@ -129,6 +134,7 @@ var Mechanic = {
     VALUE_LOCATION:      { name: 'Value Location',      container: false, construct: MechanicValueLocation      },
     VALUE_LORE:          { name: 'Value Lore',          container: false, construct: MechanicValueLore          },
     VALUE_MULTIPLY:      { name: 'Value Multiply',      container: false, construct: MechanicValueMultiply      },
+    VALUE_RANDOM:        { name: 'Value Random',        container: false, construct: MechanicValueRandom        },
     VALUE_SET:           { name: 'Value Set',           container: false, construct: MechanicValueSet           },
 	WARP:                { name: 'Warp',                container: false, construct: MechanicWarp               },
 	WARP_LOC:            { name: 'Warp Location',       container: false, construct: MechanicWarpLoc            },
@@ -522,6 +528,22 @@ function TriggerLand()
 	this.super('Land', Type.TRIGGER, true);
 	
 	this.description = 'Applies skill effects when a player lands on the ground.';
+    
+    this.data.push(new DoubleValue('Min Distance', 'min-distance', 0)
+        .setTooltip('The minimum distance the player should fall before effects activating.')
+    );
+}
+
+extend('TriggerLaunch', 'Component');
+function TriggerLaunch()
+{
+    this.super('Launch', Type.TRIGGER, true);
+    
+    this.description = 'Applies skill effects when a player launches a projectile.';
+    
+    this.data.push(new ListValue('Type', 'type', [ 'Any', 'Arrow', 'Egg', 'Ender Pearl', 'Fireball', 'Fishing Hook', 'Snowball' ], 'Any')
+        .setTooltip('The type of projectile that should be launched.')
+    );
 }
 
 extend('TriggerPhysicalDamage', 'Component');
@@ -697,7 +719,7 @@ function TargetLocation()
 extend('TargetNearest', 'Component');
 function TargetNearest()
 {
-	this.super('Area', Type.TARGET, true);
+	this.super('Nearest', Type.TARGET, true);
 	
 	this.description = 'Targets the closest unit(s) in a radius from the current target (the casting player is the default target). If you include the caster, that counts towards the max number.';
 	
@@ -716,6 +738,24 @@ function TargetNearest()
 	this.data.push(new AttributeValue("Max Targets", "max", 1, 0)
 		.setTooltip('The max amount of targets to apply children to')
 	);
+}
+
+extend('TargetOffset', 'Component');
+function TargetOffset()
+{
+	this.super('Offset', Type.TARGET, true);
+	
+	this.description = 'Targets a location that is the given offset away from each target.';
+	
+	this.data.push(new AttributeValue('Forward', 'forward', 0, 0)
+        .setTooltip('The offset from the target in the direction they are facing. Negative numbers go backwards.')
+    );
+	this.data.push(new AttributeValue('Upward', 'upward', 2, 0.5)
+        .setTooltip('The offset from the target upwards. Negative numbers go below them.')
+    );
+	this.data.push(new AttributeValue('Right', 'right', 0, 0)
+        .setTooltip('The offset from the target to their right. Negative numbers go to the left.')
+    );
 }
 
 extend('TargetRemember', 'Component');
@@ -950,9 +990,7 @@ function ConditionItem()
 	this.super('Item', Type.CONDITION, true);
 	this.description = "Applies child components when the target is wielding an item matching the given material.";
 	
-	this.data.push(new ListValue('Item', 'material', materialList, 'Stick')
-        .setTooltip('The material of the item that the target needs to be wielding')
-    );
+    addItemOptions(this);
 }
 
 extend('ConditionInventory', 'Component');
@@ -962,15 +1000,11 @@ function ConditionInventory()
     
     this.description = 'Applies child components when the target player contains the given item in their inventory. This does not work on mobs.';
     
-    this.data.push(new ListValue('Material', 'material', materialList, 'Jack O Lantern')
-        .setTooltip('The material of the item that needs to be in the player\'s inventory')
-    );
-    this.data.push(new IntValue('Data', 'data', 0)
-        .setTooltip('The data/durability value of the item that needs to be in the player\'s inventory')
-    );
     this.data.push(new AttributeValue('Amount', 'amount', 1, 0)
         .setTooltip('The amount of the item needed in the player\'s inventory')
     );
+    
+    addItemOptions(this);
 }
 
 extend('ConditionLight', 'Component');
@@ -985,21 +1019,6 @@ function ConditionLight()
     );
 	this.data.push(new AttributeValue('Max Light', 'max-light', 16, 16)
         .setTooltip('The maximum light level needed. 16 is full brightness while 0 is complete darkness')
-    );
-}
-
-extend('ConditionLore', 'Component');
-function ConditionLore()
-{
-	this.super('Lore', Type.CONDITION, true);
-	
-	this.description = 'Applies child components when the held item of the caster contains a line with the given string';
-	
-	this.data.push(new ListValue('Regex', 'regex', [ 'True', 'False' ], 'False')
-        .setTooltip('Whether or not the text to look for is formatted as regex. If you do not know what regex is, ignore this')
-    );
-	this.data.push(new StringValue('String', 'str', 'text')
-        .setTooltip('The text to look for on the held item\'s lore')
     );
 }
 
@@ -1195,6 +1214,26 @@ function MechanicBlock()
     );
 }
 
+extend('MechanicCancel', 'Component');
+function MechanicCancel()
+{
+    this.super('Cancel', Type.MECHANIC, true);
+    
+    this.description = 'Cancels the event that caused the trigger this is under to go off. For example, damage based triggers will stop the damage that was dealt while the Launch trigger would stop the projectile from firing.';
+}
+
+extend('MechanicChannel', 'Component');
+function MechanicChannel()
+{
+    this.super('Channel', Type.MECHANIC, true);
+    
+    this.description = 'Applies child effects after a duration which can be interrupted. During the channel, the player cannot move, attack, or use other spells.';
+    
+    this.data.push(new DoubleValue('Time', 'time', 3)
+        .setTooltip('The amouont of time, in seconds, to channel for')
+    );
+}
+
 extend('MechanicCleanse', 'Component');
 function MechanicCleanse()
 {
@@ -1321,6 +1360,21 @@ function MechanicDelay()
     );
 }
 
+extend('MechanicExplosion', 'Component');
+function MechanicExplosion()
+{
+	this.super('Explosion', Type.MECHANIC, true);
+	
+	this.description = 'Causes an explosion at the current target\'s position';
+	
+	this.data.push(new AttributeValue('Power', 'power', 3, 0)
+        .setTooltip('The strength of the explosion')
+    );
+    this.data.push(new ListValue('Damage Blocks', 'damage', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not to damage blocks with the explosion')
+    );
+}
+
 extend('MechanicFire', 'Component');
 function MechanicFire()
 {
@@ -1402,6 +1456,14 @@ function MechanicImmunity()
     );
 }
 
+extend('MechanicInterrupt', 'Component');
+function MechanicInterrupt()
+{
+    this.super('Interrupt', Type.MECHANIC, false);
+    
+    this.description = 'Interrupts any channeling being done by each target if applicable.';
+}
+
 extend('MechanicItem', 'Component');
 function MechanicItem()
 {
@@ -1477,15 +1539,11 @@ function MechanicItemRemove()
     
     this.description = 'Removes an item from a player inventory. This does nothing to mobs.';
     
-    this.data.push(new ListValue('Material', 'material', materialList, 'Jack O Lantern')
-        .setTooltip('The type of the item to remove')
-    ),
-    this.data.push(new IntValue('Data', 'data', 0)
-        .setTooltip('The durability value of the item to remove')
-    );
     this.data.push(new AttributeValue('Amount', 'amount', 1, 0)
-        .setTooltip('The amount of the item to remove')
+        .setTooltip('The amount of the item needed in the player\'s inventory')
     );
+    
+    addItemOptions(this);
 }
 
 extend('MechanicLaunch', 'Component');
@@ -1541,7 +1599,7 @@ function MechanicMessage()
 {
 	this.super('Message', Type.MECHANIC, false);
 	
-	this.description = 'Sends a message to each player target'
+	this.description = 'Sends a message to each player target. To include numbers from Value mechanics, use the filters {<key>} where <key> is the key the value is stored under.'
 	
 	this.data.push(new StringValue('Message', 'message', 'text')
         .setTooltip('The message to display')
@@ -1555,26 +1613,8 @@ function MechanicParticle()
 	
 	this.description = 'Plays a particle effect about the target.';
 	
-	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Block Crack', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Icon Crack', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager')
-        .setTooltip('The type of particle to display. Particle effects that show the DX, DY, and DZ options are not compatible with Cauldron')
-    );
+    addParticleOptions(this);
     
-    this.data.push(new ListValue('Material', 'material', materialList, 'Dirt').requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
-        .setTooltip('The material to use for the Block Crack or Icon Crack particles')
-    );
-    this.data.push(new IntValue('Type', 'type', 0).requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
-        .setTooltip('The material data value to se for the Block Crack or Icon Crack particles')
-    );
-    
-	this.data.push(new ListValue('Arrangement', 'arrangement', [ 'Circle', 'Hemisphere', 'Sphere' ], 'Circle')
-        .setTooltip('The arrangement to use for the particles. Circle is a 2D circle, Hemisphere is half a 3D sphere, and Sphere is a 3D sphere')
-    );
-	this.data.push(new AttributeValue('Radius', 'radius', 4, 0)
-        .setTooltip('The radius of the arrangement in blocks')
-    );
-	this.data.push(new AttributeValue('Amount', 'amount', 20, 0)
-        .setTooltip('The amount of particles to play')
-    );
 	this.data.push(new DoubleValue('Forward Offset', 'forward', 0)
         .setTooltip('How far forward in front of the target in blocks to play the particles. A negative value will go behind.')
     );
@@ -1583,34 +1623,6 @@ function MechanicParticle()
     );
 	this.data.push(new DoubleValue('Right Offset', 'right', 0)
         .setTooltip('How far to the right of the target to play the particles. A negative value will go to the left.')
-    );
-	
-	// Circle arrangement direction
-	this.data.push(new ListValue('Circle Direction', 'direction', [ 'XY', 'XZ', 'YZ' ], 'XZ').requireValue('arrangement', [ 'Circle' ])
-        .setTooltip('The orientation of the circle. XY and YZ are vertical circles while XZ is a horizontal circle.')
-    );
-	
-	// Bukkit particle data value
-	this.data.push(new IntValue('Data', 'data', 0).requireValue('particle', [ 'Smoke', 'Ender Signal', 'Mobspawner Flames', 'Potion Break' ])
-        .setTooltip('The data value to use for the particle. The effect changes between particles such as the orientation for smoke particles or the color for potion break')
-    );
-	
-	// Reflection particle data
-	var reflectList = [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Explode', 'Fireworks Spark', 'Flame', 'Footstep', 'Happy Villager', 'Hear', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Portal', 'Red Dust', 'Slime', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ];
-	this.data.push(new IntValue('Visible Radius', 'visible-radius', 25).requireValue('particle', reflectList)
-        .setTooltip('How far away players can see the particles from in blocks')
-    );
-	this.data.push(new DoubleValue('DX', 'dx', 0).requireValue('particle', reflectList)
-        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the X direction.')
-    );
-	this.data.push(new DoubleValue('DY', 'dy', 0).requireValue('particle', reflectList)
-        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the Y direction.')
-    );
-	this.data.push(new DoubleValue('DZ', 'dz', 0).requireValue('particle', reflectList)
-        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the Z direction.')
-    );
-	this.data.push(new DoubleValue('Particle Speed', 'speed', 1).requireValue('particle', reflectList)
-        .setTooltip('A packet variable that varies between particles. It generally controlls the color or velocity of the particle.')
     );
 }
 
@@ -1648,26 +1660,9 @@ function MechanicParticleAnimation()
     this.data.push(new IntValue('V-Cycles', 'v-cycles', 1)
         .setTooltip('How many times to move the animation position throughout the animation. Every other cycle moves it back to where it started. For example, two cycles would move it up and then back down.')
     );
-	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Block Crack', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Icon Crack', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager')
-        .setTooltip('The type of particle to display. Particle effects that show the DX, DY, and DZ options are not compatible with Cauldron')
-    );
     
-    this.data.push(new ListValue('Material', 'material', materialList, 'Dirt').requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
-        .setTooltip('The material to use for the Block Crack or Icon Crack particles')
-    );
-    this.data.push(new IntValue('Type', 'type', 0).requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
-        .setTooltip('The material data value to se for the Block Crack or Icon Crack particles')
-    );
+    addParticleOptions(this);
     
-	this.data.push(new ListValue('Arrangement', 'arrangement', [ 'Circle', 'Hemisphere', 'Sphere' ], 'Circle')
-        .setTooltip('The arrangement to use for the particles. Circle is a 2D circle, Hemisphere is half a 3D sphere, and Sphere is a 3D sphere')
-    );
-	this.data.push(new AttributeValue('Radius', 'radius', 4, 0)
-        .setTooltip('The radius of the arrangement in blocks')
-    );
-	this.data.push(new AttributeValue('Amount', 'amount', 20, 0)
-        .setTooltip('The amount of particles to play')
-    );
 	this.data.push(new DoubleValue('Forward Offset', 'forward', 0)
         .setTooltip('How far forward in front of the target in blocks to play the particles. A negative value will go behind.')
     );
@@ -1676,34 +1671,6 @@ function MechanicParticleAnimation()
     );
 	this.data.push(new DoubleValue('Right Offset', 'right', 0)
         .setTooltip('How far to the right of the target to play the particles. A negative value will go to the left.')
-    );
-	
-	// Circle arrangement direction
-	this.data.push(new ListValue('Circle Direction', 'direction', [ 'XY', 'XZ', 'YZ' ], 'XZ').requireValue('arrangement', [ 'Circle' ])
-        .setTooltip('The orientation of the circle. XY and YZ are vertical circles while XZ is a horizontal circle.')
-    );
-	
-	// Bukkit particle data value
-	this.data.push(new IntValue('Data', 'data', 0).requireValue('particle', [ 'Smoke', 'Ender Signal', 'Mobspawner Flames', 'Potion Break' ])
-        .setTooltip('The data value to use for the particle. The effect changes between particles such as the orientation for smoke particles or the color for potion break')
-    );
-	
-	// Reflection particle data
-	var reflectList = [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Explode', 'Fireworks Spark', 'Flame', 'Footstep', 'Happy Villager', 'Hear', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Portal', 'Red Dust', 'Slime', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ];
-	this.data.push(new IntValue('Visible Radius', 'visible-radius', 25).requireValue('particle', reflectList)
-        .setTooltip('How far away players can see the particles from in blocks')
-    );
-	this.data.push(new DoubleValue('DX', 'dx', 0).requireValue('particle', reflectList)
-        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the X direction.')
-    );
-	this.data.push(new DoubleValue('DY', 'dy', 0).requireValue('particle', reflectList)
-        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the Y direction.')
-    );
-	this.data.push(new DoubleValue('DZ', 'dz', 0).requireValue('particle', reflectList)
-        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the Z direction.')
-    );
-	this.data.push(new DoubleValue('Particle Speed', 'speed', 1).requireValue('particle', reflectList)
-        .setTooltip('A packet variable that varies between particles. It generally controlls the color or velocity of the particle.')
     );
 }
 
@@ -1720,16 +1687,8 @@ function MechanicParticleProjectile()
 	this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone')
         .setTooltip('The orientation for firing projectiles. Cone will fire arrows in a cone centered on your reticle. Horizontal cone does the same as cone, just locked to the XZ axis (parallel to the ground). Rain drops the projectiles from above the target. For firing one arrow straight, use "Cone"')
     );
-	this.data.push(new ListValue('Particle', 'particle', [ 'Angry Villager', 'Block Crack', 'Bubble', 'Cloud', 'Crit', 'Death', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Ender Signal', 'Explode', 'Firework Spark', 'Flame', 'Footstep', 'Happy Villager', 'Heart', 'Huge Explosion', 'Hurt', 'Icon Crack', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Mobspawner Flames', 'Note', 'Portal', 'Potion Break', 'Red Dust', 'Sheep Eat', 'Slime', 'Smoke', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Wolf Hearts', 'Wolf Shake', 'Wolf Smoke' ], 'Angry Villager')
-        .setTooltip('The type of particle to display. Particle effects that show the DX, DY, and DZ options are not compatible with Cauldron')
-    );
     
-    this.data.push(new ListValue('Material', 'material', materialList, 'Dirt').requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
-        .setTooltip('The material to use for the Block Crack or Icon Crack particles')
-    );
-    this.data.push(new IntValue('Type', 'type', 0).requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
-        .setTooltip('The material data value to se for the Block Crack or Icon Crack particles')
-    );
+    addParticleOptions(this);
     
 	this.data.push(new DoubleValue('Frequency', 'frequency', 0.05)
         .setTooltip('How often to play a particle effect where the projectile is. It is recommended not to change this value unless there are too many particles playing')
@@ -1742,30 +1701,6 @@ function MechanicParticleProjectile()
     );
 	this.data.push(new DoubleValue('Lifespan', 'lifespan', 3)
         .setTooltip('How long in seconds before the projectile will expire in case it doesn\'t hit anything')
-    );
-	
-	// Bukkit particle data value
-	this.data.push(new IntValue('Data', 'data', 0).requireValue('particle', [ 'Smoke', 'Ender Signal', 'Mobspawner Flames', 'Potion Break' ])
-        .setTooltip('The data value to use for the particle. The effect changes between particles such as the orientation for smoke particles or the color for potion break')
-    );
-	
-	// Reflection particle data
-	var reflectList = [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Explode', 'Fireworks Spark', 'Flame', 'Footstep', 'Happy Villager', 'Hear', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Portal', 'Red Dust', 'Slime', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic' ];
-    var reflectList2 = [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Death Suspend', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'Explode', 'Fireworks Spark', 'Flame', 'Footstep', 'Happy Villager', 'Hear', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Portal', 'Red Dust', 'Slime', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Town Aura', 'Witch Magic', 'Block Crack', 'Icon Crack' ];
-	this.data.push(new IntValue('Visible Radius', 'visible-radius', 25).requireValue('particle', reflectList2)
-        .setTooltip('How far away players can see the particles from in blocks')
-    );
-	this.data.push(new DoubleValue('DX', 'dx', 0).requireValue('particle', reflectList)
-        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the X direction.')
-    );
-	this.data.push(new DoubleValue('DY', 'dy', 0).requireValue('particle', reflectList)
-        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the Y direction.')
-    );
-	this.data.push(new DoubleValue('DZ', 'dz', 0).requireValue('particle', reflectList)
-        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the Z direction.')
-    );
-	this.data.push(new DoubleValue('Particle Speed', 'speed', 1).requireValue('particle', reflectList2)
-        .setTooltip('A packet variable that varies between particles. It generally controlls the color or velocity of the particle.')
     );
 	
 	// Cone values
@@ -1843,6 +1778,9 @@ function MechanicPotionProjectile()
 	this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
         .setTooltip('The alignment of entities to hit')
     );
+    this.data.push(new ListValue('Linger', 'linger', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not the potion should be a lingering potion (for 1.9+ only)')
+    );
 }
 
 extend('MechanicProjectile', 'Component');
@@ -1857,6 +1795,9 @@ function MechanicProjectile()
     );
 	this.data.push(new ListValue('Projectile', 'projectile', [ 'Arrow', 'Egg', 'Ghast Fireball', 'Snowball' ], 'Arrow')
         .setTooltip('The type of projectile to fire')
+    );
+    this.data.push(new ListValue('Flaming', 'flaming', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not to make the launched projectiles on fire.')
     );
 	this.data.push(new ListValue('Cost', 'cost', [ 'None', 'All', 'One' ], 'None')
         .setTooltip('The cost of the skill of the fired item. All will cost the same number of items as the skill fired.')
@@ -2070,6 +2011,27 @@ function MechanicValueMultiply()
     );
 }
 
+extend('MechanicValueRandom', 'Component')
+function MechanicValueRandom()
+{
+    this.super('Value Set', Type.MECHANIC, false);
+    
+    this.description = 'Stores a specified value under a given key for the caster.';
+    
+    this.data.push(new StringValue('Key', 'key', 'value')
+        .setTooltip('The unique key to store the value under. This key can be used in place of attribute values to use the stored value.')
+    );
+    this.data.push(new ListValue('Type', 'type', [ 'Normal', 'Triangular' ], 'Normal')
+        .setTooltip('The type of random to use. Triangular favors numbers in the middle, similar to rolling two dice.')
+    );
+    this.data.push(new AttributeValue('Min', 'min', 0, 0)
+        .setTooltip('The minimum value it can be')
+    );
+    this.data.push(new AttributeValue('Max', 'max', 0, 0)
+        .setTooltip('The maximum value it can be')
+    );
+}
+
 extend('MechanicValueSet', 'Component');
 function MechanicValueSet()
 {
@@ -2212,3 +2174,157 @@ function MechanicWolf()
 
 // The active component being edited or added to
 var activeComponent = undefined;
+
+/**
+ * Adds the options for item related effects to the component
+ *
+ * @param {Component} component - the component to add to
+ */
+function addItemOptions(component) {
+    
+    component.data.push(new ListValue('Check Material', 'check-mat', [ 'True', 'False' ], 'True')
+        .setTooltip('Whether or not the item needs to be a certain type')
+    );
+    component.data.push(new ListValue('Material', 'material', materialList, 'Arrow')
+        .requireValue('check-mat', [ 'True' ])
+        .setTooltip('The type the item needs to be')
+    );
+    
+    component.data.push(new ListValue('Check Data', 'check-data', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not the item needs to have a certain data value')
+    );
+    component.data.push(new IntValue('Data', 'data', 0)
+        .requireValue('check-data', [ 'True' ])
+        .setTooltip('The data value the item must have')
+    );
+    
+    component.data.push(new ListValue('Check Lore', 'check-lore', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not the item requires a bit of text in its lore')
+    );
+    component.data.push(new StringValue('Lore', 'lore', 'text')
+        .requireValue('check-lore', [ 'True' ])
+        .setTooltip('The text the item requires in its lore')
+    );
+    
+    component.data.push(new ListValue('Check Name', 'check-name', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not the item needs to have a bit of text in its display name')
+    );
+    component.data.push(new StringValue('Name', 'name', 'name')
+        .requireValue('check-name', [ 'True' ])
+        .setTooltip('The text the item requires in its display name')
+    );
+    
+    component.data.push(new ListValue('Regex', 'regex', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not the name and lore checks are regex strings. If you do not know what regex is, leave this option alone.')
+    );
+}
+
+/**
+ * Adds the options for particle effects to the components
+ *
+ * @param {Component} component - the component to add to
+ */
+function addParticleOptions(component) {
+    component.data.push(new ListValue('Particle', 'particle', 
+        [ 
+            'Angry Villager', 
+            'Barrier',
+            'Block Crack', 
+            'Bubble', 
+            'Cloud', 
+            'Crit', 
+            'Damage Indicator',
+            'Death', 
+            'Death Suspend', 
+            'Dragon Breath',
+            'Drip Lava', 
+            'Drip Water', 
+            'Enchantment Table', 
+            'End Rod',
+            'Ender Signal', 
+            'Explode', 
+            'Firework Spark', 
+            'Flame', 
+            'Footstep', 
+            'Happy Villager', 
+            'Heart', 
+            'Huge Explosion', 
+            'Hurt', 
+            'Icon Crack', 
+            'Instant Spell', 
+            'Large Explode', 
+            'Large Smoke', 
+            'Lava', 
+            'Magic Crit', 
+            'Mob Spell', 
+            'Mob Spell Ambient', 
+            'Mobspawner Flames', 
+            'Note', 
+            'Portal', 
+            'Potion Break', 
+            'Red Dust', 
+            'Sheep Eat', 
+            'Slime', 
+            'Smoke', 
+            'Snowball Poof', 
+            'Snow Shovel', 
+            'Spell', 
+            'Splash', 
+            'Sweep Attack',
+            'Suspend', 
+            'Town Aura', 
+            'Water Drop',
+            'Water Wake',
+            'Witch Magic', 
+            'Wolf Hearts', 
+            'Wolf Shake', 
+            'Wolf Smoke' 
+        ], 'Angry Villager')
+        .setTooltip('The type of particle to display. Particle effects that show the DX, DY, and DZ options are not compatible with Cauldron')
+    );
+    
+    component.data.push(new ListValue('Material', 'material', materialList, 'Dirt').requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
+        .setTooltip('The material to use for the Block Crack or Icon Crack particles')
+    );
+    component.data.push(new IntValue('Type', 'type', 0).requireValue('particle', [ 'Block Crack', 'Icon Crack' ])
+        .setTooltip('The material data value to se for the Block Crack or Icon Crack particles')
+    );
+    
+	component.data.push(new ListValue('Arrangement', 'arrangement', [ 'Circle', 'Hemisphere', 'Sphere' ], 'Circle')
+        .setTooltip('The arrangement to use for the particles. Circle is a 2D circle, Hemisphere is half a 3D sphere, and Sphere is a 3D sphere')
+    );
+	component.data.push(new AttributeValue('Radius', 'radius', 4, 0)
+        .setTooltip('The radius of the arrangement in blocks')
+    );
+	component.data.push(new AttributeValue('Particles', 'particles', 20, 0)
+        .setTooltip('The amount of particles to play')
+    );
+	
+	// Circle arrangement direction
+	component.data.push(new ListValue('Circle Direction', 'direction', [ 'XY', 'XZ', 'YZ' ], 'XZ').requireValue('arrangement', [ 'Circle' ])
+        .setTooltip('The orientation of the circle. XY and YZ are vertical circles while XZ is a horizontal circle.')
+    );
+	
+	// Bukkit particle data value
+	component.data.push(new IntValue('Data', 'data', 0).requireValue('particle', [ 'Smoke', 'Ender Signal', 'Mobspawner Flames', 'Potion Break' ])
+        .setTooltip('The data value to use for the particle. The effect changes between particles such as the orientation for smoke particles or the color for potion break')
+    );
+	
+	// Reflection particle data
+	var reflectList = [ 'Angry Villager', 'Bubble', 'Cloud', 'Crit', 'Damage Indicator', 'Death Suspend', 'Dragon Breath', 'Drip Lava', 'Drip Water', 'Enchantment Table', 'End Rod', 'Explode', 'Fireworks Spark', 'Flame', 'Footstep', 'Happy Villager', 'Hear', 'Huge Explosion', 'Instant Spell', 'Large Explode', 'Large Smoke', 'Lava', 'Magic Crit', 'Mob Spell', 'Mob Spell Ambient', 'Note', 'Portal', 'Red Dust', 'Slime', 'Snowball Poof', 'Snow Shovel', 'Spell', 'Splash', 'Suspend', 'Sweep Attack', 'Town Aura', 'Water Drop', 'Water Wake', 'Witch Magic' ];
+	component.data.push(new IntValue('Visible Radius', 'visible-radius', 25).requireValue('particle', reflectList)
+        .setTooltip('How far away players can see the particles from in blocks')
+    );
+	component.data.push(new DoubleValue('DX', 'dx', 0).requireValue('particle', reflectList)
+        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the X direction.')
+    );
+	component.data.push(new DoubleValue('DY', 'dy', 0).requireValue('particle', reflectList)
+        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the Y direction.')
+    );
+	component.data.push(new DoubleValue('DZ', 'dz', 0).requireValue('particle', reflectList)
+        .setTooltip('A packet variable that varies between particles. It generally is used for how far from the position a particle can move in the Z direction.')
+    );
+	component.data.push(new DoubleValue('Particle Speed', 'speed', 1).requireValue('particle', reflectList)
+        .setTooltip('A packet variable that varies between particles. It generally controlls the color or velocity of the particle.')
+    );
+}
