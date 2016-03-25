@@ -9,6 +9,7 @@ function Class(name)
 {
 	this.dataKey = 'attributes';
 	this.componentKey = 'classes do not have components';
+    this.attribCount = 0;
 	
 	// Class data
 	this.data = [
@@ -31,7 +32,34 @@ function Class(name)
 			'&d' + name
 		]).setTooltip('The text shown on the item for the class in GUIs')
 	];
+    
+    this.updateAttribs(10);
 }
+
+Class.prototype.updateAttribs = function(i)
+{
+    var j;
+    var back = {};
+    for (j = 0; j < this.attribCount; j++)
+        back[this.data[i + j].key] = this.data[i + j];
+    this.data.splice(i, this.attribCount);
+    this.attribCount = 0;
+    for (j = 0; j < ATTRIBS.length; j++)
+    {
+        var attrib = ATTRIBS[j];
+        var format = attrib.charAt(0).toUpperCase() + attrib.substr(1);
+        this.data.splice(i + j, 0, new AttributeValue(format, attrib, 0, 0)
+            .setTooltip('The amount of ' + attrib + ' the class should have')
+        );
+        if (back[attrib]) 
+        {
+            var old = back[attrib];
+            this.data[i + j].base = old.base;
+            this.data[i + j].scale = old.scale;
+        }
+        this.attribCount++;
+    }
+};
 
 /**
  * Creates the form HTML for editing the class and applies it to
@@ -59,6 +87,12 @@ Class.prototype.createFormHTML = function()
 	for (var i = 0; i < this.data.length; i++)
 	{
 		this.data[i].createHTML(form);
+        
+        // Append attributes
+        if (this.data[i].name == 'Mana')
+        {
+            this.updateAttribs(i + 1);
+        }
 	}
 	
 	var hr = document.createElement('hr');
@@ -95,7 +129,7 @@ Class.prototype.createFormHTML = function()
 	var target = document.getElementById('classForm');
 	target.innerHTML = '';
 	target.appendChild(form);
-}
+};
 
 /**
  * Updates the class data from the details form if it exists
@@ -122,7 +156,7 @@ Class.prototype.update = function()
 	if (isClassNameTaken(newName)) return;
 	this.data[0].value = newName;
 	list[index].text = this.data[0].value;
-}
+};
 
 /**
  * Creates and returns a save string for the class
@@ -146,7 +180,7 @@ Class.prototype.getSaveString = function()
 		}
 	}
 	return saveString;
-}
+};
 
 /**
  * Loads class data from the config lines stating at the given index

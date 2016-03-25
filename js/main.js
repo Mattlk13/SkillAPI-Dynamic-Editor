@@ -21,6 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+ 
+var ATTRIBS = [
+    'vitality',
+    'spirit',
+    'intelligence',
+    'dexterity',
+    'strength'
+];
 
 depend('sounds');
 depend('filter');
@@ -195,10 +203,14 @@ window.onload = function()
 		});
 	}
     
+    var attribs = localStorage.getItem('attribs');
     var skillData = localStorage.getItem('skillData');
     var skillIndex = localStorage.getItem('skillIndex');
     var classData = localStorage.getItem('classData');
     var classIndex = localStorage.getItem('classIndex');
+    if (attribs) {
+        ATTRIBS = attribs.split(",");
+    }
     if (skillData) {
         skills = [];
         document.getElementById('skillList').remove(0);
@@ -345,7 +357,11 @@ document.addEventListener('drop', function(e) {
 // Loads an individual skill or class file
 function loadIndividual(e) {
 	var text = e.target.result;
-	if (text.indexOf('components:') >= 0 || (text.indexOf('group:') == -1 && text.indexOf('combo:') == -1 && text.indexOf('skills:') == -1))
+    if (text.indexOf('global:') >= 0)
+    {
+        loadAttributes(e);
+    }
+	else if (text.indexOf('components:') >= 0 || (text.indexOf('group:') == -1 && text.indexOf('combo:') == -1 && text.indexOf('skills:') == -1))
 	{
 		loadSkills(e);
 	}
@@ -353,6 +369,20 @@ function loadIndividual(e) {
 	{
 		loadClasses(e);
 	}
+}
+
+// Loads attribute data from a file
+// e - event details
+function loadAttributes(e) {
+    var text = e.target.result;
+    document.activeElement.blur();
+    var yaml = parseYAML(text);
+    ATTRIBS = Object.keys(yaml);
+    if (!skillsActive) {
+        activeClass.update();
+        activeClass.createFormHTML();
+    }
+    localStorage.setItem('attribs', ATTRIBS);
 }
 
 // Loads skill data from a file after it has been read

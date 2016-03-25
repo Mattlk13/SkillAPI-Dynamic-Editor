@@ -88,6 +88,7 @@ var Condition = {
  * Available mechanic component data
  */
 var Mechanic = {
+    ATTRIBUTE:           { name: 'Attribute',           container: false, construct: MechanicAttribute          },
     BLOCK:               { name: 'Block',               container: false, construct: MechanicBlock              },
     CANCEL:              { name: 'Cancel',              container: false, construct: MechanicCancel             },
     CHANNEL:             { name: 'Channel',             container: true,  construct: MechanicChannel            },
@@ -1164,6 +1165,24 @@ function ConditionWater()
 }
 
 // -- Mechanic constructors ---------------------------------------------------- //
+
+extend('MechanicAttribute', 'Component');
+function MechanicAttribute()
+{
+	this.super('Attribute', Type.MECHANIC, false);
+	
+	this.description = 'Gives a player bonus attributes temporarily.';
+	
+	this.data.push(new StringValue('Attribute', 'key', 'Intelligence')
+        .setTooltip('The name of the attribute to add to')
+    );
+    this.data.push(new AttributeValue('Amount', 'amount', 5, 2)
+        .setTooltip('How much to add to the player\'s attribute')
+    );
+	this.data.push(new AttributeValue('Seconds', 'seconds', 3, 0)
+        .setTooltip('How long in seconds to give the attributes to the player')
+    );
+}
 
 extend('MechanicBlock', 'Component');
 function MechanicBlock() 
