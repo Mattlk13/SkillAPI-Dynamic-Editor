@@ -1248,6 +1248,9 @@ function MechanicChannel()
     
     this.description = 'Applies child effects after a duration which can be interrupted. During the channel, the player cannot move, attack, or use other spells.';
     
+    this.data.push(new ListValue('Still', 'still', [ 'True', 'False' ], 'True')
+        .setTooltip('Whether or not to hold the player in place while channeling')
+    );
     this.data.push(new DoubleValue('Time', 'time', 3)
         .setTooltip('The amouont of time, in seconds, to channel for')
     );
@@ -2033,7 +2036,7 @@ function MechanicValueMultiply()
 extend('MechanicValueRandom', 'Component')
 function MechanicValueRandom()
 {
-    this.super('Value Set', Type.MECHANIC, false);
+    this.super('Value Random', Type.MECHANIC, false);
     
     this.description = 'Stores a specified value under a given key for the caster.';
     
