@@ -58,6 +58,7 @@ var Target = {
  * Available condition component data
  */ 
 var Condition = {
+    ARMOR:       { name: 'Armor',       container: true, construct: ConditionArmor      },
     ATTRIBUTE:   { name: 'Attribute',   container: true, construct: ConditionAttribute  },
     BIOME:       { name: 'Biome',       container: true, construct: ConditionBiome      },
     BLOCK:       { name: 'Block',       container: true, construct: ConditionBlock      },
@@ -101,6 +102,7 @@ var Mechanic = {
     DAMAGE_LORE:         { name: 'Damage Lore',         container: false, construct: MechanicDamageLore         },
     DEFENSE_BUFF:        { name: 'Defense Buff',        container: false, construct: MechanicDefenseBuff        },
     DELAY:               { name: 'Delay',               container: true,  construct: MechanicDelay              },
+    DISGUISE:            { name: 'Disguise',            container: false, construct: MechanicDisguise           },
     EXPLOSION:           { name: 'Explosion',           container: false, construct: MechanicExplosion          },
     FIRE:                { name: 'Fire',                container: false, construct: MechanicFire               },
     FLAG:                { name: 'Flag',                container: false, construct: MechanicFlag               },
@@ -131,6 +133,7 @@ var Mechanic = {
     SOUND:               { name: 'Sound',               container: false, construct: MechanicSound              },
     SPEED:               { name: 'Speed',               container: false, construct: MechanicSpeed              },
     STATUS:              { name: 'Status',              container: false, construct: MechanicStatus             },
+    TAUNT:               { name: 'Taunt',               container: false, construct: MechanicTaunt              },
     VALUE_ADD:           { name: 'Value Add',           container: false, construct: MechanicValueAdd           },
     VALUE_ATTRIBUTE:     { name: 'Value Attribute',     container: false, construct: MechanicValueAttribute     },
     VALUE_LOCATION:      { name: 'Value Location',      container: false, construct: MechanicValueLocation      },
@@ -171,6 +174,15 @@ function Component(name, type, container, parent)
     if (this.type == Type.MECHANIC) {
         this.data.push(new ListValue('Counts as Cast', 'counts', [ 'True', 'False' ], 'True')
             .setTooltip('Whether or not this mechanic running treats the skill as "casted" and will consume mana and start the cooldown. Set to false if it is a mechanic appled when the skill fails such as cleanup or an error message.')
+        );
+    }
+    else if (this.type == Type.TRIGGER && name != 'Cast' && name != 'Initialize' && name != 'Cleanup')
+    {
+        this.data.push(new ListValue('Mana', 'mana', [ 'True', 'False' ], 'False')
+            .setTooltip('Whether or not this trigger requires the mana cost to activate')
+        );
+        this.data.push(new ListValue('Cooldown', 'cooldown', [ 'True', 'False' ], 'False')
+            .setTooltip('Whether or not this trigger requires to be off cooldown to activate')
         );
     }
     
@@ -803,6 +815,19 @@ function TargetSingle()
 
 // -- Condition constructors --------------------------------------------------- //
 
+extend('ConditionArmor', 'Component');
+function ConditionArmor()
+{
+    this.super('Item', Type.CONDITION, true);
+    this.description = "Applies child components when the target is wearing an armor item matching the given details.";
+    
+    this.data.push(new ListValue('Armor', 'armor', [ 'Helmet', 'Chestplate', 'Leggings', 'Boots', 'Any' ], 'Any')
+        .setTooltip('The type of armor to check')
+    );
+    
+    addItemOptions(this);
+}
+
 extend('ConditionAttribute', 'Component');
 function ConditionAttribute() 
 {
@@ -1063,7 +1088,7 @@ function ConditionName()
 extend('ConditionOffhand', 'Component');
 function ConditionOffhand()
 {
-    this.super('Item', Type.CONDITION, true);
+    this.super('Offhand', Type.CONDITION, true);
     this.description = "Applies child components when the target is wielding an item matching the given material as an offhand item. This is for v1.9+ servers only.";
     
     addItemOptions(this);
@@ -1079,7 +1104,7 @@ function ConditionPotion()
     this.data.push(new ListValue('Type', 'type', [ 'Active', 'Not Active' ], 'Active')
         .setTooltip('Whether or not the potion should be active')
     );
-    this.data.push(new ListValue('Potion', 'potion', [ 'Any', 'Absorption', 'Blindness', 'Confusion', 'Damage Resistance', 'Fast Digging', 'Fire Resistance', 'Health Boost', 'Hunger', 'Increase Damage', 'Invisibility', 'Jump', 'Levitation', 'Night Vision', 'Poison', 'Regeneration', 'Saturation', 'Slow', 'Slow Digging', 'Speed', 'Water Breathing', 'Weakness', 'Wither' ], 'Any')
+    this.data.push(new ListValue('Potion', 'potion', [ 'Any', 'Absorption', 'Blindness', 'Confusion', 'Damage Resistance', 'Fast Digging', 'Fire Resistance', 'Glowing', 'Health Boost', 'Hunger', 'Increase Damage', 'Invisibility', 'Jump', 'Levitation', 'Luck', 'Night Vision', 'Poison', 'Regeneration', 'Saturation', 'Slow', 'Slow Digging', 'Speed', 'Unluck', 'Water Breathing', 'Weakness', 'Wither' ], 'Any')
         .setTooltip('The type of potion to look for')
     );
 }
@@ -1246,7 +1271,7 @@ function MechanicBlock()
 extend('MechanicCancel', 'Component');
 function MechanicCancel()
 {
-    this.super('Cancel', Type.MECHANIC, true);
+    this.super('Cancel', Type.MECHANIC, false);
     
     this.description = 'Cancels the event that caused the trigger this is under to go off. For example, damage based triggers will stop the damage that was dealt while the Launch trigger would stop the projectile from firing.';
 }
@@ -1327,6 +1352,9 @@ function MechanicDamage()
     this.data.push(new AttributeValue("Value", "value", 3, 1)
         .setTooltip('The amount of damage to deal')
     );
+    this.data.push(new ListValue('True Damage', 'true', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not to deal true damage. True damage ignores armor and all plugin checks.')
+    );
 }
 
 extend('MechanicDamageBuff', 'Component');
@@ -1354,11 +1382,17 @@ function MechanicDamageLore()
     
     this.description = 'Damages each target based on a value found in the lore of the item held by the caster.';
     
+    this.data.push(new ListValue("Hand", "hand", [ 'Main', 'Offhand' ], 'Main')
+        .setTooltip('The hand to check for the item. Offhand items are MC 1.9+ only.')
+    );
     this.data.push(new StringValue('Regex', 'regex', 'Damage: {value}')
         .setTooltip('The regex for the text to look for. Use {value} for where the important number should be. If you do not know about regex, consider looking it up on Wikipedia or avoid using major characters such as [ ] { } ( ) . + ? * ^ \\ |')
     );
     this.data.push(new AttributeValue('Multiplier', 'multiplier', 1, 0)
         .setTooltip('The multiplier to use on the value to get the actual damage to deal')
+    );
+    this.data.push(new ListValue('True Damage', 'true', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not to deal true damage. True damage ignores armor and all plugin checks.')
     );
 }
 
@@ -1392,6 +1426,44 @@ function MechanicDelay()
     );
 }
 
+extend('MechanicDisguise', 'Component');
+function MechanicDisguise()
+{
+    this.super('Disguise', Type.MECHANIC, false);
+    
+    this.description = 'Disguises each target according to the settings. This mechanic requires the LibsDisguise plugin to be installed on your server.';
+    
+    this.data.push(new AttributeValue('Duration', 'duration', -1, 0)
+        .setTooltip('How long to apply the disguise for in seconds. Use a negative number to permanently disguise the targets.')
+    );
+    this.data.push(new ListValue('Type', 'type', [ 'Mob', 'Player', 'Misc' ], 'Mob')
+        .setTooltip('The type of disguise to use, as defined by the LibsDisguise plugin.')
+    );
+    
+    this.data.push(new ListValue('Mob', 'mob', [ 'Bat', 'Blaze', 'Cave Spider', 'Chicken', 'Cow', 'Creeper', 'Donkey', 'Elder Guardian', 'Ender Dragon', 'Enderman', 'Endermite', 'Ghast', 'Giant', 'Guardian', 'Horse', 'Iron Golem', 'Magma Cube', 'Mule', 'Mushroom Cow', 'Ocelot', 'Pig', 'Pig Zombie', 'Rabbit', 'Sheep', 'Shulker', 'Silverfish', 'Skeleton', 'Slime', 'Snowman', 'Spider', 'Squid', 'Undead Horse', 'Villager', 'Witch', 'Wither', 'Wither Skeleton', 'Wolf', 'Zombie', 'Zombie Villager'], 'Zombie')
+        .requireValue('type', [ 'Mob' ])
+        .setTooltip('The type of mob to disguise the target as')
+    );
+    this.data.push(new ListValue('Adult', 'adult', [ 'True', 'False', ], 'True')
+        .requireValue('type', [ 'Mob' ])
+        .setTooltip('Whether or not to use the adult variant of the mob')
+    );
+    
+    this.data.push(new StringValue('Player', 'player', 'Eniripsa96')
+        .requireValue('type', [ 'Player' ])
+        .setTooltip('The player to disguise the target as')
+    );
+    
+    this.data.push(new ListValue('Misc', 'misc', [ 'Area Effect Cloud', 'Armor Stand', 'Arrow', 'Boat', 'Dragon Fireball', 'Dropped Item', 'Egg', 'Ender Crystal', 'Ender Pearl', 'Ender Signal', 'Experience Orb', 'Falling Block', 'Fireball', 'Firework', 'Fishing Hook', 'Item Frame', 'Leash Hitch', 'Minecart', 'Minecart Chest', 'Minecart Command', 'Minecart Furnace', 'Minecart Hopper', 'Minecart Mob Spawner', 'Minecart TNT', 'Painting', 'Primed TNT', 'Shulker Bullet', 'Snowball', 'Spectral Arrow', 'Splash Potion', 'Tipped Arrow', 'Thrown EXP Bottle', 'Wither Skull' ], 'Painting')
+        .requireValue('type', [ 'Misc' ])
+        .setTooltip('The object to disguise the target as')
+    );
+    this.data.push(new IntValue('Data', 'data', 0)
+        .requireValue('type', [ 'Misc' ])
+        .setTooltip('Data value to use for the disguise type. What it does depends on the disguise')
+    );
+}
+
 extend('MechanicExplosion', 'Component');
 function MechanicExplosion()
 {
@@ -1404,6 +1476,9 @@ function MechanicExplosion()
     );
     this.data.push(new ListValue('Damage Blocks', 'damage', [ 'True', 'False' ], 'False')
         .setTooltip('Whether or not to damage blocks with the explosion')
+    );
+    this.data.push(new ListValue('Fire', 'fire', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not to set affected blocks on fire')
     );
 }
 
@@ -1551,15 +1626,22 @@ function MechanicItemProjectile()
     );
     
     // Cone values
-    this.data.push(new AttributeValue('Angle', 'angle', 30, 0).requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
+    this.data.push(new AttributeValue('Angle', 'angle', 30, 0)
+        .requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
         .setTooltip('The angle in degrees of the cone arc to spread projectiles over. If you are only firing one projectile, this does not matter.')
+    );
+    this.data.push(new DoubleValue('Position', 'position', 0, 0)
+        .requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
+        .setTooltip('The height from the ground to start the projectile')
     );
     
     // Rain values
-    this.data.push(new AttributeValue('Height', 'height', 8, 0).requireValue('spread', [ 'Rain' ])
+    this.data.push(new AttributeValue('Height', 'height', 8, 0)
+        .requireValue('spread', [ 'Rain' ])
         .setTooltip('The distance in blocks over the target to rain the projectiles from')
     );
-    this.data.push(new AttributeValue('Radius', 'radius', 2, 0).requireValue('spread', [ 'Rain' ])
+    this.data.push(new AttributeValue('Radius', 'radius', 2, 0)
+        .requireValue('spread', [ 'Rain' ])
         .setTooltip('The radius of the rain emission area in blocks')
     );
 }
@@ -1736,15 +1818,22 @@ function MechanicParticleProjectile()
     );
     
     // Cone values
-    this.data.push(new AttributeValue('Angle', 'angle', 30, 0).requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
+    this.data.push(new AttributeValue('Angle', 'angle', 30, 0)
+        .requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
         .setTooltip('The angle in degrees of the cone arc to spread projectiles over. If you are only firing one projectile, this does not matter.')
+    );
+    this.data.push(new AttributeValue('Height', 'height', 8, 0)
+        .requireValue('spread', [ 'Rain' ])
+        .setTooltip('The distance in blocks over the target to rain the projectiles from')
     );
     
     // Rain values
-    this.data.push(new AttributeValue('Height', 'height', 8, 0).requireValue('spread', [ 'Rain' ])
+    this.data.push(new AttributeValue('Height', 'height', 8, 0)
+        .requireValue('spread', [ 'Rain' ])
         .setTooltip('The distance in blocks over the target to rain the projectiles from')
     );
-    this.data.push(new AttributeValue('Radius', 'radius', 2, 0).requireValue('spread', [ 'Rain' ])
+    this.data.push(new AttributeValue('Radius', 'radius', 2, 0)
+        .requireValue('spread', [ 'Rain' ])
         .setTooltip('The radius of the rain emission area in blocks')
     );
 }
@@ -1783,7 +1872,7 @@ function MechanicPotion()
     
     this.description = 'Applies a potion effect to the target for a duration.';
     
-    this.data.push(new ListValue('Potion', 'potion', [ 'Absorption', 'Blindness', 'Confusion', 'Damage Resistance', 'Fast Digging', 'Fire Resistance', 'Health Boost', 'Hunger', 'Increase Damage', 'Invisibility', 'Jump', 'Levitation', 'Night Vision', 'Poison', 'Regeneration', 'Saturation', 'Slow', 'Slow Digging', 'Speed', 'Water Breathing', 'Weakness', 'Wither' ], 'Absorption')
+    this.data.push(new ListValue('Potion', 'potion', [ 'Absorption', 'Blindness', 'Confusion', 'Damage Resistance', 'Fast Digging', 'Fire Resistance', 'Glowing', 'Health Boost', 'Hunger', 'Increase Damage', 'Invisibility', 'Jump', 'Levitation', 'Luck', 'Night Vision', 'Poison', 'Regeneration', 'Saturation', 'Slow', 'Slow Digging', 'Speed', 'Unluck', 'Water Breathing', 'Weakness', 'Wither' ], 'Absorption')
         .setTooltip('The type of potion effect to apply')
     );
     this.data.push(new ListValue('Ambient Particles', 'ambient', [ 'True', 'False' ], 'True')
@@ -1971,6 +2060,14 @@ function MechanicStatus()
     );
 }
 
+extend('MechanicTaunt', 'Component');
+function MechanicTaunt()
+{
+    this.super('Taunt', Type.MECHANIC, false);
+    
+    this.description = 'Draws aggro of targeted creatures. This only works on newer server versions.';
+}
+
 extend('MechanicValueAdd', 'Component');
 function MechanicValueAdd()
 {
@@ -2022,6 +2119,9 @@ function MechanicValueLore()
     
     this.data.push(new StringValue('Key', 'key', 'lore')
         .setTooltip('The unique key to store the value under. This key can be used in place of attribute values to use the stored value.')
+    );
+    this.data.push(new ListValue("Hand", "hand", [ 'Main', 'Offhand' ], 'Main')
+        .setTooltip('The hand to check for the item. Offhand items are MC 1.9+ only.')
     );
     this.data.push(new StringValue('Regex', 'regex', 'Damage: {value}')
         .setTooltip('The regex string to look for, using {value} as the number to store. If you do not know about regex, consider looking it up on Wikipedia or avoid using major characters such as [ ] { } ( ) . + ? * ^ \\ |')

@@ -80,7 +80,7 @@ YAMLObject.prototype.parse = function(lines, index, indent)
 {
 	while (index < lines.length && countSpaces(lines[index]) >= indent)
 	{
-		while (index < lines.length && (countSpaces(lines[index]) != indent || lines[index].replace(/ /g, '').charAt(0) == '#')) index++;
+		while (index < lines.length && (countSpaces(lines[index]) != indent || lines[index].replace(/ /g, '').charAt(0) == '#' || lines[index].indexOf(':') == -1)) index++;
 		if (index == lines.length) return index;
 		
 		var key = lines[index].substring(indent, lines[index].indexOf(':'));
