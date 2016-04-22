@@ -209,7 +209,7 @@ Component.prototype.createBuilderHTML = function(target)
     div.className = 'component ' + this.type;
     if (this.type != Type.TRIGGER) {
         div.draggable = true;
-        div.ondrag = this.drag;
+        div.ondragstart = this.drag;
     }
     div.ondrop = this.drop;
     if (this.container) {
@@ -306,6 +306,7 @@ Component.prototype.allowDrop = function(e) {
 };
 
 Component.prototype.drag = function(e) {
+    e.dataTransfer.setData('text', 'anything');
     var dragged = document.getElementById('dragComponent');
     if (dragged) {
         dragged.id = '';
@@ -701,7 +702,7 @@ function TargetLinear()
     this.data.push(new AttributeValue("Range", "range", 5, 0)
         .setTooltip('The max distance away any target can be in blocks')
     );
-    this.data.push(new DoubleValue("Tolerance", "tolerance", 4)
+    this.data.push(new AttributeValue("Tolerance", "tolerance", 4, 0)
         .setTooltip('How lenient the targeting is. Larger numbers allow easier targeting. It is essentially how wide a cone is which is where you are targeting.')
     );
     this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
@@ -802,7 +803,7 @@ function TargetSingle()
     this.data.push(new AttributeValue("Range", "range", 5, 0)
         .setTooltip('The max distance away any target can be in blocks')
     );
-    this.data.push(new DoubleValue("Tolerance", "tolerance", 4)
+    this.data.push(new AttributeValue("Tolerance", "tolerance", 4, 0)
         .setTooltip('How lenient the targeting is. Larger numbers allow easier targeting. It is essentially how wide a cone is which is where you are targeting.')
     );
     this.data.push(new ListValue("Group", "group", ["Ally", "Enemy", "Both"], "Enemy")
@@ -818,7 +819,7 @@ function TargetSingle()
 extend('ConditionArmor', 'Component');
 function ConditionArmor()
 {
-    this.super('Item', Type.CONDITION, true);
+    this.super('Armor', Type.CONDITION, true);
     this.description = "Applies child components when the target is wearing an armor item matching the given details.";
     
     this.data.push(new ListValue('Armor', 'armor', [ 'Helmet', 'Chestplate', 'Leggings', 'Boots', 'Any' ], 'Any')
@@ -1584,8 +1585,11 @@ function MechanicItem()
     this.data.push(new IntValue('Amount', 'amount', 1)
         .setTooltip('The quantity of the item to give to the player')
     );
-    this.data.push(new IntValue('Data', 'data', 0)
-        .setTooltip('The durability value of the item to give to the player for things like dye color or tool durability')
+    this.data.push(new IntValue('Durability', 'data', 0)
+        .setTooltip('The durability value of the item to give to the player')
+    );
+    this.data.push(new IntValue('Data', 'byte', 0)
+        .setTooltip('The data value of the item to give to the player for things such as egg type or wool color')
     );
     this.data.push(new ListValue('Custom', 'custom', [ 'True', 'False' ], 'False')
         .setTooltip('Whether or not to apply a custom name/lore to the item')
@@ -1822,9 +1826,9 @@ function MechanicParticleProjectile()
         .requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
         .setTooltip('The angle in degrees of the cone arc to spread projectiles over. If you are only firing one projectile, this does not matter.')
     );
-    this.data.push(new AttributeValue('Height', 'height', 8, 0)
-        .requireValue('spread', [ 'Rain' ])
-        .setTooltip('The distance in blocks over the target to rain the projectiles from')
+    this.data.push(new DoubleValue('Position', 'position', 0, 0)
+        .requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
+        .setTooltip('The height from the ground to start the projectile')
     );
     
     // Rain values

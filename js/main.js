@@ -144,8 +144,17 @@ function getClassSaveData() {
 function setupOptionList(div, list, type) 
 {
 	var x;
+    var i = 0;
+    var output = '';
 	for (x in list)
 	{
+        if (i % 4 == 0)
+            output += '| ';
+        output += '[[' + list[x].name + '|_' + type.substr(0, 1).toUpperCase() + type.substr(1) + ' ' + list[x].name + ']] | ';
+        i++;
+        if (i % 4 == 0)
+            output += '\n';
+     
 		var e = document.createElement('h5');
 		e.innerHTML = list[x].name;
 		e.component = list[x];
@@ -166,6 +175,8 @@ function setupOptionList(div, list, type)
 		});
 		div.appendChild(e);
 	}
+    
+    //saveToFile('wiki_' + type + '.txt', output);
 }
 
 var skillsActive = true;

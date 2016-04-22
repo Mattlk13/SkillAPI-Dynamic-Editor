@@ -38,17 +38,20 @@ function Class(name)
 
 Class.prototype.updateAttribs = function(i)
 {
-    var j;
+    var j = 0;
     var back = {};
-    for (j = 0; j < this.attribCount; j++)
-        back[this.data[i + j].key] = this.data[i + j];
+    while (this.data[i + j] instanceof AttributeValue)
+    {
+        back[this.data[i + j].key.toLowerCase()] = this.data[i + j];
+        j++;
+    }
     this.data.splice(i, this.attribCount);
     this.attribCount = 0;
     for (j = 0; j < ATTRIBS.length; j++)
     {
-        var attrib = ATTRIBS[j];
+        var attrib = ATTRIBS[j].toLowerCase();
         var format = attrib.charAt(0).toUpperCase() + attrib.substr(1);
-        this.data.splice(i + j, 0, new AttributeValue(format, attrib, 0, 0)
+        this.data.splice(i + j, 0, new AttributeValue(format, attrib.toLowerCase(), 0, 0)
             .setTooltip('The amount of ' + attrib + ' the class should have')
         );
         if (back[attrib]) 
