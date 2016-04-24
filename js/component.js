@@ -66,6 +66,7 @@ var Condition = {
     CLASS:       { name: 'Class',       container: true, construct: ConditionClass      },
     CLASS_LEVEL: { name: 'Class Level', container: true, construct: ConditionClassLevel },
     COMBAT:      { name: 'Combat',      container: true, construct: ConditionCombat     },
+    CROUCH:      { name: 'Crouch',      container: true, construct: ConditionCrouch     },
     DIRECTION:   { name: 'Direction',   container: true, construct: ConditionDirection  },
     ELEVATION:   { name: 'Elevation',   container: true, construct: ConditionElevation  },
     FIRE:        { name: 'Fire',        container: true, construct: ConditionFire       },
@@ -491,7 +492,7 @@ function TriggerCrouch()
     
     this.description = 'Applies skill effects when a player starts or stops crouching using the shift key.';
     
-    this.data.push(new ListValue('Type', 'type', [ 'Start Crouching', 'Stop Crouching' ], 'Start Crouching')
+    this.data.push(new ListValue('Type', 'type', [ 'Start Crouching', 'Stop Crouching', 'Both' ], 'Start Crouching')
         .setTooltip('Whether or not you want to apply components when crouching or not crouching')
     );
 }
@@ -928,6 +929,21 @@ function ConditionCombat()
     
     this.data.push(new ListValue('In Combat', 'combat', [ 'True', 'False' ], 'True')
         .setTooltip('Whether or not the target should be in or out of combat')
+    );
+    this.data.push(new DoubleValue('Seconds', 'seconds', 10)
+        .setTooltip('The time in seconds since the last combat activity before something is considered not in combat')
+    );
+}
+
+extend('ConditionCrouch', 'Component');
+function ConditionCrouch()
+{
+    this.super('Crouch', Type.CONDITION, true);
+    
+    this.description = 'Applies child components if the target player(s) are crouching';
+    
+    this.data.push(new ListValue('Crouching', 'crouch', [ 'True', 'False' ], 'True')
+        .setTooltip('Whether or not the player should be crouching')
     );
     this.data.push(new DoubleValue('Seconds', 'seconds', 10)
         .setTooltip('The time in seconds since the last combat activity before something is considered not in combat')
