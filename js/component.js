@@ -231,6 +231,27 @@ Component.prototype.createBuilderHTML = function(target)
     // Container components can add children so they get a button
     if (this.container) 
     {
+        var vision = document.createElement('div');
+        vision.className = 'builderButton smallButton';
+        vision.style.background = 'url("img/eye.png") no-repeat center #222';
+        vision.component = this;
+        vision.addEventListener('click', function(e) {
+            var comp = this.component;
+            if (comp.childrenHidden)
+            {
+                comp.childDiv.style.display = 'block';
+                this.style.backgroundImage = 'url("img/eye.png")';
+            }
+            else 
+            {
+                comp.childDiv.style.display = 'none';
+                this.style.backgroundImage = 'url("img/eyeShaded.png")';
+            }
+            comp.childrenHidden = !comp.childrenHidden;
+        });
+        div.appendChild(vision);
+        this.childrenHidden = false;
+        
         var add = document.createElement('div');
         add.className = 'builderButton';
         add.innerHTML = '+ Add Child';
@@ -273,6 +294,7 @@ Component.prototype.createBuilderHTML = function(target)
         }
     }
     container.appendChild(childContainer);
+    this.childDiv = childContainer;
     
     // Append the content
     target.appendChild(container);
@@ -945,9 +967,6 @@ function ConditionCrouch()
     this.data.push(new ListValue('Crouching', 'crouch', [ 'True', 'False' ], 'True')
         .setTooltip('Whether or not the player should be crouching')
     );
-    this.data.push(new DoubleValue('Seconds', 'seconds', 10)
-        .setTooltip('The time in seconds since the last combat activity before something is considered not in combat')
-    );
 }
 
 extend('ConditionDirection', 'Component');
@@ -1384,6 +1403,9 @@ function MechanicDamageBuff()
     this.data.push(new ListValue('Type', 'type', [ 'Flat', 'Multiplier' ], 'Flat')
         .setTooltip('The type of buff to apply. Flat increases damage by a fixed amount while multiplier increases it by a percentage.')
     );
+    this.data.push(new ListValue('Skill Damage', 'skill', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not to buff skill damage. If false, it will affect physical damage.')
+    );
     this.data.push(new AttributeValue('Value', 'value', 1, 0)
         .setTooltip('The amount to increase/decrease the damage by. A negative amoutn with the "Flat" type will decrease damage, similar to a number less than 1 for the multiplier.')
     );
@@ -1422,6 +1444,9 @@ function MechanicDefenseBuff()
     
     this.data.push(new ListValue('Type', 'type', [ 'Flat', 'Multiplier' ], 'Flat')
         .setTooltip('The type of buff to apply. Flat will increase/reduce incoming damage by a fixed amount where Multiplier does it by a percentage of the damage. Multipliers above 1 will increase damage taken while multipliers below 1 reduce damage taken.')
+    );
+    this.data.push(new ListValue('Skill Defense', 'skill', [ 'True', 'False' ], 'False')
+        .setTooltip('Whether or not to buff skill defense. If false, it will affect physical defense.')
     );
     this.data.push(new AttributeValue('Value', 'value', 1, 0)
         .setTooltip('The amount to increase/decrease incoming damage by')
@@ -1484,7 +1509,7 @@ function MechanicDisguise()
 extend('MechanicExplosion', 'Component');
 function MechanicExplosion()
 {
-    this.super('Explosion', Type.MECHANIC, true);
+    this.super('Explosion', Type.MECHANIC, false);
     
     this.description = 'Causes an explosion at the current target\'s position';
     
@@ -2481,5 +2506,8 @@ function addParticleOptions(component) {
     );
     component.data.push(new DoubleValue('Particle Speed', 'speed', 1).requireValue('particle', reflectList)
         .setTooltip('A packet variable that varies between particles. It generally controlls the color or velocity of the particle.')
+    );
+    component.data.push(new DoubleValue('Packet Amount', 'amount', 1).requireValue('particle', reflectList)
+        .setTooltip('A packet variable that varies between particles. Setting this to 0 lets you control the color of some particles.')
     );
 }

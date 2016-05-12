@@ -57,6 +57,7 @@ h3:hover {
 	float: left;
 	background-color: #222;
 	width: 90px;
+    height: 32px;
 	font: 16px Sertig-Web;
 	border-radius: 8px;
 	padding: 5px;
@@ -67,6 +68,10 @@ h3:hover {
 	border: 1px solid #ccc;
 	
 	transition: background-color 600ms;
+}
+
+.smallButton {
+    width: 32px;
 }
 
 .builderButton:hover {
