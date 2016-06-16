@@ -1685,7 +1685,7 @@ function MechanicItemProjectile()
         .requireValue('spread', [ 'Rain' ])
         .setTooltip('The distance in blocks over the target to rain the projectiles from')
     );
-    this.data.push(new AttributeValue('Radius', 'radius', 2, 0)
+    this.data.push(new AttributeValue('Radius', 'rain-radius', 2, 0)
         .requireValue('spread', [ 'Rain' ])
         .setTooltip('The radius of the rain emission area in blocks')
     );
@@ -1877,7 +1877,7 @@ function MechanicParticleProjectile()
         .requireValue('spread', [ 'Rain' ])
         .setTooltip('The distance in blocks over the target to rain the projectiles from')
     );
-    this.data.push(new AttributeValue('Radius', 'radius', 2, 0)
+    this.data.push(new AttributeValue('Radius', 'rain-radius', 2, 0)
         .requireValue('spread', [ 'Rain' ])
         .setTooltip('The radius of the rain emission area in blocks')
     );
@@ -1984,7 +1984,7 @@ function MechanicProjectile()
     this.data.push(new AttributeValue('Height', 'height', 8, 0).requireValue('spread', [ 'Rain' ])
         .setTooltip('The distance in blocks over the target to rain the projectiles from')
     );
-    this.data.push(new AttributeValue('Radius', 'radius', 2, 0).requireValue('spread', [ 'Rain' ])
+    this.data.push(new AttributeValue('Radius', 'rain-radius', 2, 0).requireValue('spread', [ 'Rain' ])
         .setTooltip('The radius of the rain emission area in blocks')
     );
 }
