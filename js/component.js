@@ -191,6 +191,21 @@ function Component(name, type, container, parent)
     this.componentKey = 'children';
 }
 
+Component.prototype.dupe = function(parent)
+{
+    var i;
+    var ele = new Component(this.name, this.type, this.container, parent);
+    for (i = 0; i < this.components.length; i++)
+    {
+        ele.components.push(this.components[i].dupe());
+    }
+    for (i = ele.data.length; i < this.data.length; i++)
+    {
+        ele.data.push(this.data[i].dupe());
+    }
+    return ele;
+}
+
 /**
  * Creates the builder HTML element for the component and
  * appends it onto the target HTML element.
@@ -219,6 +234,7 @@ Component.prototype.createBuilderHTML = function(target)
     
     // Component label
     var label = document.createElement('h3');
+    label.title = 'Edit ' + this.name + ' options';
     label.className = this.type + 'Label';
     label.innerHTML = this.name;
     label.component = this;
@@ -231,7 +247,18 @@ Component.prototype.createBuilderHTML = function(target)
     // Container components can add children so they get a button
     if (this.container) 
     {
+        var add = document.createElement('div');
+        add.className = 'builderButton';
+        add.innerHTML = '+ Add Child';
+        add.component = this;
+        add.addEventListener('click', function(e) {
+            activeComponent = this.component; 
+            showSkillPage('componentChooser');
+        });
+        div.appendChild(add);
+        
         var vision = document.createElement('div');
+        vision.title = 'Hide Children';
         vision.className = 'builderButton smallButton';
         vision.style.background = 'url("img/eye.png") no-repeat center #222';
         vision.component = this;
@@ -251,22 +278,30 @@ Component.prototype.createBuilderHTML = function(target)
         });
         div.appendChild(vision);
         this.childrenHidden = false;
-        
-        var add = document.createElement('div');
-        add.className = 'builderButton';
-        add.innerHTML = '+ Add Child';
-        add.component = this;
-        add.addEventListener('click', function(e) {
-            activeComponent = this.component; 
-            showSkillPage('componentChooser');
+    }
+    
+    // Add the duplicate button
+    if (this.type != Type.TRIGGER)
+    {
+        var duplicate = document.createElement('div');
+        duplicate.className = 'builderButton smallButton';
+        duplicate.title = 'Duplicate';
+        duplicate.style.background = 'url("img/duplicate.png") no-repeat center #222';
+        duplicate.component = this;
+        duplicate.addEventListener('click', function(e) {
+            var comp = this.component;
+            var copy = comp.dupe(comp.parent);
+            comp.parent.components.push(copy);
+            copy.createBuilderHTML(comp.parent.html);
         });
-        div.appendChild(add);
+        div.appendChild(duplicate);
     }
     
     // Add the remove button
     var remove = document.createElement('div');
-    remove.className = 'builderButton cancelButton';
-    remove.innerHTML = '- Remove';
+    remove.title = 'Remove';
+    remove.className = 'builderButton smallButton cancelButton';
+    remove.style.background = 'url("img/delete.png") no-repeat center #f00';
     remove.component = this;
     remove.addEventListener('click', function(e) {
         var list = this.component.parent.components;
@@ -1651,44 +1686,15 @@ function MechanicItemProjectile()
     
     this.description = 'Launches a projectile using an item as its visual that applies child components upon landing. The target passed on will be the collided target or the location where it landed if it missed.';
     
-    this.data.push(new ListValue("Group", "group", ["Ally", "Enemy"], "Enemy")
-        .setTooltip('The alignment of targets to hit')
-    );
-    this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone')
-        .setTooltip('The orientation for firing projectiles. Cone will fire arrows in a cone centered on your reticle. Horizontal cone does the same as cone, just locked to the XZ axis (parallel to the ground). Rain drops the projectiles from above the target. For firing one arrow straight, use "Cone"')
-    );
+    
     this.data.push(new ListValue('Item', 'item', materialList, 'Jack O Lantern')
         .setTooltip('The item type to use as a projectile')
     ),
     this.data.push(new IntValue('Item Data', 'item-data', 0)
         .setTooltip('The durability value for the item to use as a projectile, most notably for dyes or colored items like wool')
     ),
-    this.data.push(new AttributeValue('Speed', 'velocity', 3, 0)
-        .setTooltip('How fast to fire the projectiles. If doing a Rain spread, use negative speed to fire it downwards.')
-    );
-    this.data.push(new AttributeValue('Amount', 'amount', 1, 0)
-        .setTooltip('The number of projectiles to fire')
-    );
     
-    // Cone values
-    this.data.push(new AttributeValue('Angle', 'angle', 30, 0)
-        .requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
-        .setTooltip('The angle in degrees of the cone arc to spread projectiles over. If you are only firing one projectile, this does not matter.')
-    );
-    this.data.push(new DoubleValue('Position', 'position', 0, 0)
-        .requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
-        .setTooltip('The height from the ground to start the projectile')
-    );
-    
-    // Rain values
-    this.data.push(new AttributeValue('Height', 'height', 8, 0)
-        .requireValue('spread', [ 'Rain' ])
-        .setTooltip('The distance in blocks over the target to rain the projectiles from')
-    );
-    this.data.push(new AttributeValue('Radius', 'rain-radius', 2, 0)
-        .requireValue('spread', [ 'Rain' ])
-        .setTooltip('The radius of the rain emission area in blocks')
-    );
+    addProjectileOptions(this);
 }
 
 extend('MechanicItemRemove', 'Component');
@@ -1840,46 +1846,14 @@ function MechanicParticleProjectile()
     
     this.description = 'Launches a projectile using particles as its visual that applies child components upon landing. The target passed on will be the collided target or the location where it landed if it missed.';
     
-    this.data.push(new ListValue("Group", "group", ["Ally", "Enemy"], "Enemy")
-        .setTooltip('The alignment of targets to hit')
-    );
-    this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone')
-        .setTooltip('The orientation for firing projectiles. Cone will fire arrows in a cone centered on your reticle. Horizontal cone does the same as cone, just locked to the XZ axis (parallel to the ground). Rain drops the projectiles from above the target. For firing one arrow straight, use "Cone"')
-    );
-    
+    addProjectileOptions(this);
     addParticleOptions(this);
     
     this.data.push(new DoubleValue('Frequency', 'frequency', 0.05)
         .setTooltip('How often to play a particle effect where the projectile is. It is recommended not to change this value unless there are too many particles playing')
     );
-    this.data.push(new AttributeValue('Speed', 'velocity', 3, 0)
-        .setTooltip('How fast to fire the projectiles. If doing a Rain spread, use negative speed to fire it downwards.')
-    );
-    this.data.push(new AttributeValue('Amount', 'amount', 1, 0)
-        .setTooltip('The number of projectiles to fire')
-    );
     this.data.push(new DoubleValue('Lifespan', 'lifespan', 3)
         .setTooltip('How long in seconds before the projectile will expire in case it doesn\'t hit anything')
-    );
-    
-    // Cone values
-    this.data.push(new AttributeValue('Angle', 'angle', 30, 0)
-        .requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
-        .setTooltip('The angle in degrees of the cone arc to spread projectiles over. If you are only firing one projectile, this does not matter.')
-    );
-    this.data.push(new DoubleValue('Position', 'position', 0, 0)
-        .requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
-        .setTooltip('The height from the ground to start the projectile')
-    );
-    
-    // Rain values
-    this.data.push(new AttributeValue('Height', 'height', 8, 0)
-        .requireValue('spread', [ 'Rain' ])
-        .setTooltip('The distance in blocks over the target to rain the projectiles from')
-    );
-    this.data.push(new AttributeValue('Radius', 'rain-radius', 2, 0)
-        .requireValue('spread', [ 'Rain' ])
-        .setTooltip('The radius of the rain emission area in blocks')
     );
 }
 
@@ -1956,9 +1930,6 @@ function MechanicProjectile()
     
     this.description = 'Launches a projectile that applies child components on hit. The target supplied will be the struck target.';
     
-    this.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone')
-        .setTooltip('The orientation for firing projectiles. Cone will fire arrows in a cone centered on your reticle. Horizontal cone does the same as cone, just locked to the XZ axis (parallel to the ground). Rain drops the projectiles from above the target. For firing one arrow straight, use "Cone"')
-    );
     this.data.push(new ListValue('Projectile', 'projectile', [ 'Arrow', 'Egg', 'Ghast Fireball', 'Snowball' ], 'Arrow')
         .setTooltip('The type of projectile to fire')
     );
@@ -1968,25 +1939,8 @@ function MechanicProjectile()
     this.data.push(new ListValue('Cost', 'cost', [ 'None', 'All', 'One' ], 'None')
         .setTooltip('The cost of the skill of the fired item. All will cost the same number of items as the skill fired.')
     );
-    this.data.push(new AttributeValue('Speed', 'velocity', 3, 0)
-        .setTooltip('How fast to fire the projectiles. If doing a Rain spread, use negative speed to fire it downwards.')
-    );
-    this.data.push(new AttributeValue('Amount', 'amount', 1, 0)
-        .setTooltip('The number of projectiles to fire')
-    );
     
-    // Cone values
-    this.data.push(new AttributeValue('Angle', 'angle', 30, 0).requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
-        .setTooltip('The angle in degrees of the cone arc to spread projectiles over. If you are only firing one projectile, this does not matter.')
-    );
-    
-    // Rain values
-    this.data.push(new AttributeValue('Height', 'height', 8, 0).requireValue('spread', [ 'Rain' ])
-        .setTooltip('The distance in blocks over the target to rain the projectiles from')
-    );
-    this.data.push(new AttributeValue('Radius', 'rain-radius', 2, 0).requireValue('spread', [ 'Rain' ])
-        .setTooltip('The radius of the rain emission area in blocks')
-    );
+    addProjectileOptions(this);
 }
 
 extend('MechanicPurge', 'Component');
@@ -2396,6 +2350,54 @@ function addItemOptions(component) {
     
     component.data.push(new ListValue('Regex', 'regex', [ 'True', 'False' ], 'False')
         .setTooltip('Whether or not the name and lore checks are regex strings. If you do not know what regex is, leave this option alone.')
+    );
+}
+
+function addProjectileOptions(component) {
+    
+    // General data
+    component.data.push(new ListValue("Group", "group", ["Ally", "Enemy"], "Enemy")
+        .setTooltip('The alignment of targets to hit')
+    );
+    component.data.push(new ListValue('Spread', 'spread', [ 'Cone', 'Horizontal Cone', 'Rain' ], 'Cone')
+        .setTooltip('The orientation for firing projectiles. Cone will fire arrows in a cone centered on your reticle. Horizontal cone does the same as cone, just locked to the XZ axis (parallel to the ground). Rain drops the projectiles from above the target. For firing one arrow straight, use "Cone"')
+    );
+    component.data.push(new AttributeValue('Amount', 'amount', 1, 0)
+        .setTooltip('The number of projectiles to fire')
+    );
+    component.data.push(new AttributeValue('Velocity', 'velocity', 3, 0)
+        .setTooltip('How fast the projectile is launched. A negative value fires it in the opposite direction.')
+    );
+    
+    // Cone values
+    component.data.push(new AttributeValue('Angle', 'angle', 30, 0)
+        .requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
+        .setTooltip('The angle in degrees of the cone arc to spread projectiles over. If you are only firing one projectile, this does not matter.')
+    );
+    component.data.push(new DoubleValue('Position', 'position', 0, 0)
+        .requireValue('spread', [ 'Cone', 'Horizontal Cone' ])
+        .setTooltip('The height from the ground to start the projectile')
+    );
+    
+    // Rain values
+    component.data.push(new AttributeValue('Height', 'height', 8, 0)
+        .requireValue('spread', [ 'Rain' ])
+        .setTooltip('The distance in blocks over the target to rain the projectiles from')
+    );
+    component.data.push(new AttributeValue('Radius', 'rain-radius', 2, 0)
+        .requireValue('spread', [ 'Rain' ])
+        .setTooltip('The radius of the rain emission area in blocks')
+    );
+    
+    // Offsets
+    component.data.push(new AttributeValue('Forward Offset', 'forward', 0, 0)
+        .setTooltip('How far forward in front of the target the projectile should fire from in blocks. A negative value will put it behind.')
+    );
+    component.data.push(new AttributeValue('Upward Offset', 'upward', 0, 0)
+        .setTooltip('How far above the target the projectile should fire from in blocks. A negative value will put it below.')
+    );
+    component.data.push(new AttributeValue('Right Offset', 'right', 0, 0)
+        .setTooltip('How far to the right of the target the projectile should fire from. A negative value will put it to the left.')
     );
 }
 

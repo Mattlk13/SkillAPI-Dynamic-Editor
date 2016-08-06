@@ -99,6 +99,12 @@ function IndexListValue(name, key, list, index)
 	this.hidden = false;
 }
 
+IndexListValue.prototype.dupe = function()
+{
+    return new IndexListValue(this.name, this.key, this.list, this.index)
+        .setTooltip(this.tooltip);
+}
+
 // -- Hooking up the function at the top, see comments there -- //
 IndexListValue.prototype.requireValue = requireValue;
 IndexListValue.prototype.applyRequireValues = applyRequireValues;
@@ -209,6 +215,12 @@ function ListValue(name, key, list, value)
 	this.label = undefined;
 	this.select = undefined;
 	this.hidden = false;
+}
+
+ListValue.prototype.dupe = function()
+{
+    return new ListValue(this.name, this.key, this.list, this.value)
+        .setTooltip(this.tooltip);
 }
 
 // -- Hooking up the function at the top, see comments there -- //
@@ -337,6 +349,12 @@ function AttributeValue(name, key, base, scale)
 	this.baseBox = undefined;
 	this.scaleBox = undefined;
 	this.hidden = false;
+}
+
+AttributeValue.prototype.dupe = function()
+{
+    return new AttributeValue(this.name, this.key, this.base, this.scale)
+        .setTooltip(this.tooltip);
 }
 
 // -- Hooking up the function at the top, see comments there -- //
@@ -477,6 +495,12 @@ function DoubleValue(name, key, value)
 	this.hidden = false;
 }
 
+DoubleValue.prototype.dupe = function()
+{
+    return new DoubleValue(this.name, this.key, this.value)
+        .setTooltip(this.tooltip);
+}
+
 // -- Hooking up the function at the top, see comments there -- //
 DoubleValue.prototype.requireValue = requireValue;
 DoubleValue.prototype.applyRequireValues = applyRequireValues;
@@ -582,6 +606,12 @@ function IntValue(name, key, value)
 	this.hidden = false;
 }
 
+IntValue.prototype.dupe = function()
+{
+    return new IntValue(this.name, this.key, this.value)
+        .setTooltip(this.tooltip);
+}
+
 // -- Hooking up the function at the top, see comments there -- //
 IntValue.prototype.requireValue = requireValue;
 IntValue.prototype.applyRequireValues = applyRequireValues;
@@ -685,6 +715,12 @@ function StringValue(name, key, value)
 	this.label = undefined;
 	this.box = undefined;
 	this.hidden = false;
+}
+
+StringValue.prototype.dupe = function()
+{
+    return new StringValue(this.name, this.key, this.value)
+        .setTooltip(this.tooltip);
 }
 
 // -- Hooking up the functions at the top, see comments there -- //
@@ -795,6 +831,12 @@ function StringListValue(name, key, value)
 	this.label = undefined;
 	this.box = undefined;
 	this.hidden = false;
+}
+
+StringListValue.prototype.dupe = function()
+{
+    return new StringListValue(this.name, this.key, this.value)
+        .setTooltip(this.tooltip);
 }
 
 // -- Hooking up the function at the top, see comments there -- //
@@ -920,6 +962,12 @@ function ByteListValue(name, key, values, value)
 	this.label = undefined;
 	this.box = undefined;
 	this.hidden = false;
+}
+
+ByteListValue.prototype.dupe = function()
+{
+    return new ByteListValue(this.name, this.key, this.values, this.value)
+        .setTooltip(this.tooltip);
 }
 
 // -- Hooking up the function at the top, see comments there -- //
